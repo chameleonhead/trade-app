@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  tradeapp:
+    image: tradeapp
+    build:
+      context: ./src/TradeApp
+      dockerfile: Dockerfile
