@@ -13,7 +13,6 @@ namespace TradeApp
 
         public static void Run(TradeAppConfig config)
         {
-            throw new NotImplementedException();
         }
     }
 }

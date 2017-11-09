@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace TradeApp
+namespace TradeApp.Drivers
 {
     class TradeAppRunner
     {
@@ -9,7 +9,7 @@ namespace TradeApp
         private Uri oandaServerBaseUri;
         private string shutdownFilePath;
 
-        public TradeAppRunner(FakeOandaServer oandaServer, string accessToken)
+        public TradeAppRunner(OandaFakeServerDriver oandaServer, string accessToken)
         {
             this.accessToken = accessToken;
             this.oandaServerBaseUri = oandaServer.BaseUri;
@@ -29,7 +29,7 @@ namespace TradeApp
 
         public void Stop()
         {
-            File.WriteAllText(shutdownFilePath, "");
+            File.WriteAllText(shutdownFilePath, null);
         }
 
         public void WriteLogForAccountBalance()
