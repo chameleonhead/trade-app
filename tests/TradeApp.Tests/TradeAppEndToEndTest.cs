@@ -7,7 +7,12 @@ namespace TradeApp
     public class TradeAppEndToEndTest
     {
         private static string OANDA_OAUTH_TOKEN = "TEST_TOKEN";
-        private static OandaFakeServerDriver oanda = new OandaFakeServerDriver(OANDA_OAUTH_TOKEN);
+        private static OandaFakeServerDriver oanda;
+
+        static TradeAppEndToEndTest()
+        {
+            oanda = new OandaFakeServerDriver(OANDA_OAUTH_TOKEN);
+        }
 
         [TestInitialize]
         public void Setup()

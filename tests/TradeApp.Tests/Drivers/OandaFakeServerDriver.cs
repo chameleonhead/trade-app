@@ -1,80 +1,48 @@
-using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Threading;
+using System.IO;
+using System.Text;
 using TradeApp.FakeServer;
 
 namespace TradeApp.Drivers
 {
-    class OandaFakeServerDriver : IDisposable
+    class OandaFakeServerDriver
     {
-        private string accessToken;
+        private HttpRequestListener httpRequestListener;
         private OandaFakeServer server;
-        private CancellationTokenSource cts;
 
-        public Uri BaseUri { get; internal set; }
+        public Uri BaseUri => server.BaseUri;
 
         public OandaFakeServerDriver(string accessToken)
         {
-            this.accessToken = accessToken;
-            BaseUri = new Uri("http://localhost:5000/");
+            httpRequestListener = new HttpRequestListener();
+            server = new OandaFakeServer(accessToken, httpRequestListener);
         }
 
         public void Start()
         {
-            cts = new CancellationTokenSource();
-            server = new OandaFakeServer(accessToken);
-            WebHost.CreateDefaultBuilder()
-                .Configure(server.Configuration)
-                .Build()
-                .RunAsync(cts.Token);
+            server.Start();
         }
 
         public void Stop()
         {
-            cts.Cancel();
+            server.StopAsync();
         }
 
         public void HasReceivedAccountRequest()
         {
-            // TODOもっときれいな実装に書き換え
-            var time = DateTime.Now;
-            while(DateTime.Now - time < TimeSpan.FromSeconds(5))
+            httpRequestListener.Process((request, response) =>
             {
-                if (server.HasAccessedAccount)
+                if (request.Path.StartsWithSegments(PathString.FromUriComponent("/accounts/")))
                 {
-                    return;
+                    var responseBytes = Encoding.UTF8.GetBytes("");
+                    var stream = new MemoryStream();
+                    stream.Write(responseBytes, 0, responseBytes.Length);
+                    response.Body = stream;
                 }
-            }
+            }, TimeSpan.FromSeconds(5));
             Assert.Fail("時間内に口座残高照会のリクエストが来ていない");
         }
-
-        #region IDisposable Support
-        private bool disposedValue = false;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    cts.Cancel();
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        ~OandaFakeServerDriver()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-        #endregion
     }
 }
