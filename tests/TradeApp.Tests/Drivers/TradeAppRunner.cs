@@ -1,5 +1,7 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace TradeApp.Drivers
 {
@@ -24,7 +26,7 @@ namespace TradeApp.Drivers
                 OandaAccessToken = accessToken,
                 ShutdownWatchFile = shutdownFilePath,
             };
-            Program.Run(config);
+            Program.RunAsync(config).ConfigureAwait(false);
         }
 
         public void Stop()
@@ -34,7 +36,10 @@ namespace TradeApp.Drivers
 
         public void WriteLogForAccountBalance()
         {
-            throw new NotImplementedException();
+            while (!File.Exists("log.txt"))
+            {
+            }
+            Assert.IsTrue(File.ReadAllLines("log.txt").Any(t => t.Contains("Accounts")));
         }
     }
 }

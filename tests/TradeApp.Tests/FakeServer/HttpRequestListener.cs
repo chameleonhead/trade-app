@@ -1,35 +1,34 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
 
 namespace TradeApp.FakeServer
 {
     class HttpRequestListener
     {
-        private BlockingCollection<Tuple<TaskCompletionSource<object>, HttpContext>> requests;
+        private BlockingCollection<HttpContext> requests;
 
         public HttpRequestListener()
         {
-            requests = new BlockingCollection<Tuple<TaskCompletionSource<object>, HttpContext>>();
+            requests = new BlockingCollection<HttpContext>();
         }
 
-        public async Task Dispatch(HttpContext context)
+        public void Dispatch(HttpContext context)
         {
-            var tcs = new TaskCompletionSource<object>();
-            requests.Add(Tuple.Create(tcs, context));
-            await tcs.Task;
+            requests.Add(context);
         }
 
-        public void Process(Action<HttpRequest, HttpResponse> processor, TimeSpan wait)
+        public bool Process(Action<HttpContext> processor)
         {
-            var value = default(Tuple<TaskCompletionSource<object>, HttpContext>);
-            if (requests.TryTake(out value, wait))
-            {
-                var context = value.Item2;
-                processor.Invoke(context.Request, context.Response);
-                value.Item1.SetResult(default(object));
-            }
+            var context = default(HttpContext);
+            int retryCount = 0;
+            while (retryCount++ < 5)
+                if (requests.TryTake(out context, TimeSpan.FromSeconds(1)))
+                {
+                    processor.Invoke(context);
+                    return true;
+                }
+            return false;
         }
     }
 }

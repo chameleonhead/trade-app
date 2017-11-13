@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using System;
-using System.Threading.Tasks;
 
 namespace TradeApp.FakeServer
 {
@@ -26,26 +24,25 @@ namespace TradeApp.FakeServer
         public readonly string URL_TO_LISTEN = "http://localhost:5000";
         public Uri BaseUri => new Uri(URL_TO_LISTEN);
 
-
         public void Start()
         {
             webHost.Start();
         }
 
-        public Task StopAsync()
+        public void Stop()
         {
-            return webHost.StopAsync();
+            webHost.StopAsync().ContinueWith(t => webHost.Dispose());
         }
 
 
         public void Configuration(IApplicationBuilder app)
         {
-            app.Run(Router);
-        }
-
-        private async Task Router(HttpContext context)
-        {
-            await httpRequestListener.Dispatch(context);
+            app.Use(async (context, next) =>
+            {
+                httpRequestListener.Dispatch(context);
+                await next();
+            });
+            app.UseOandaFakeServer();
         }
     }
 }

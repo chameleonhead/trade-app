@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.IO;
-using System.Text;
 using TradeApp.FakeServer;
 
 namespace TradeApp.Drivers
@@ -27,22 +25,18 @@ namespace TradeApp.Drivers
 
         public void Stop()
         {
-            server.StopAsync();
+            server.Stop();
         }
 
         public void HasReceivedAccountRequest()
         {
-            httpRequestListener.Process((request, response) =>
+            if (!httpRequestListener.Process(context =>
             {
-                if (request.Path.StartsWithSegments(PathString.FromUriComponent("/accounts/")))
-                {
-                    var responseBytes = Encoding.UTF8.GetBytes("");
-                    var stream = new MemoryStream();
-                    stream.Write(responseBytes, 0, responseBytes.Length);
-                    response.Body = stream;
-                }
-            }, TimeSpan.FromSeconds(5));
-            Assert.Fail("時間内に口座残高照会のリクエストが来ていない");
+                Assert.IsTrue(context.Request.Path.StartsWithSegments(PathString.FromUriComponent("/v1/accounts/")));
+            }))
+            {
+                Assert.Fail("時間内に口座残高照会のリクエストが来ていない");
+            }
         }
     }
 }
