@@ -1,9 +1,9 @@
-﻿using System;
+﻿using CommandLine;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace TradeApp
@@ -12,21 +12,32 @@ namespace TradeApp
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var result = Parser.Default.ParseArguments<TradeAppOption>(args);
+            result.MapResult(o => RunAsync(o).Result,
+                _ => 1);
         }
 
-        public static async Task RunAsync(TradeAppConfig config)
+        private async static Task<int> RunAsync(TradeAppOption option)
         {
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", config.OandaAccessToken);
-            var response = await client.GetAsync(new Uri(config.OandaServerBaseUri, "/v1/accounts")).ConfigureAwait(false);
-            if (response.StatusCode == HttpStatusCode.OK)
+            try
             {
-                using (var file = File.AppendText("log.txt"))
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", option.OandaAccessToken);
+                var response = await client.GetAsync(new Uri(new Uri(option.OandaServerBaseUri.ToString(), UriKind.Absolute), "/v1/accounts")).ConfigureAwait(false);
+                if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    file.WriteLine("Accounts:");
+                    using (var file = File.AppendText("log.txt"))
+                    {
+                        file.WriteLine("Accounts:");
+                    }
                 }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            return 0;
         }
     }
 }

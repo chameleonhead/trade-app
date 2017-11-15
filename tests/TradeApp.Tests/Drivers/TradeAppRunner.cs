@@ -2,6 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace TradeApp.Drivers
 {
@@ -20,13 +21,12 @@ namespace TradeApp.Drivers
 
         public void Start()
         {
-            var config = new TradeAppConfig()
-            {
-                OandaServerBaseUri = oandaServerBaseUri,
-                OandaAccessToken = accessToken,
-                ShutdownWatchFile = shutdownFilePath,
-            };
-            Program.RunAsync(config).ConfigureAwait(false);
+            Task.Run(() =>
+                Program.Main(new[] {
+                    "--server", oandaServerBaseUri.ToString(),
+                    "--token", accessToken,
+                    "--gracefulshutdownfile", shutdownFilePath,
+                }));
         }
 
         public void Stop()
@@ -34,7 +34,11 @@ namespace TradeApp.Drivers
             File.WriteAllText(shutdownFilePath, null);
         }
 
-        public void WriteLogForAccountBalance()
+        public void WriteEventForStartup()
+        {
+        }
+
+        public void WriteEventForAccountBalanceUpdated()
         {
             while (!File.Exists("log.txt"))
             {

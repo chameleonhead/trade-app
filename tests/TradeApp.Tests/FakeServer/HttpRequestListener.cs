@@ -21,13 +21,11 @@ namespace TradeApp.FakeServer
         public bool Process(Action<HttpContext> processor)
         {
             var context = default(HttpContext);
-            int retryCount = 0;
-            while (retryCount++ < 5)
-                if (requests.TryTake(out context, TimeSpan.FromSeconds(1)))
-                {
-                    processor.Invoke(context);
-                    return true;
-                }
+            if (requests.TryTake(out context, TimeSpan.FromSeconds(5)))
+            {
+                processor.Invoke(context);
+                return true;
+            }
             return false;
         }
     }

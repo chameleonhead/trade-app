@@ -42,7 +42,7 @@ namespace TradeApp.FakeServer
                 httpRequestListener.Dispatch(context);
                 await next();
             });
-            app.UseOandaFakeServer();
+            app.UseOandaFakeServer(accessToken);
         }
     }
 }

@@ -1,18 +1,20 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
-using System;
 using Newtonsoft.Json;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace TradeApp.FakeServer
 {
     public class OandaFakeServerMiddleware
     {
         private readonly RequestDelegate _next;
+        private string _accessToken;
 
-        public OandaFakeServerMiddleware(RequestDelegate next)
+        public OandaFakeServerMiddleware(RequestDelegate next, string accessToken)
         {
             _next = next;
+            _accessToken = accessToken;
         }
 
         public Task Invoke(HttpContext context)
@@ -26,6 +28,11 @@ namespace TradeApp.FakeServer
 
         private async Task AccountContextHandler(HttpContext context)
         {
+            if (context.Request.Headers["Authorization"] != "Bearer " + _accessToken)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                return;
+            }
             var response = new
             {
                 accounts = new[]
@@ -50,9 +57,9 @@ namespace TradeApp.FakeServer
 
     public static class OandaFakeServerMiddlewareExtensions
     {
-        public static IApplicationBuilder UseOandaFakeServer(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseOandaFakeServer(this IApplicationBuilder builder, string accessToken)
         {
-            return builder.UseMiddleware<OandaFakeServerMiddleware>();
+            return builder.UseMiddleware<OandaFakeServerMiddleware>(accessToken);
         }
     }
 }
