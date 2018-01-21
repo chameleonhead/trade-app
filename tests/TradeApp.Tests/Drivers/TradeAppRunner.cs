@@ -1,7 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace TradeApp.Drivers
@@ -11,6 +10,7 @@ namespace TradeApp.Drivers
         private string accessToken;
         private Uri oandaServerBaseUri;
         private string shutdownFilePath;
+        private Task mainTask;
 
         public TradeAppRunner(OandaFakeServerDriver oandaServer, string accessToken)
         {
@@ -21,7 +21,7 @@ namespace TradeApp.Drivers
 
         public void Start()
         {
-            Task.Run(() =>
+            mainTask = Task.Run(() =>
                 Program.Main(new[] {
                     "--server", oandaServerBaseUri.ToString(),
                     "--token", accessToken,
@@ -29,21 +29,15 @@ namespace TradeApp.Drivers
                 }));
         }
 
+        public void ApplicationEnded()
+        {
+            mainTask.Wait(TimeSpan.FromSeconds(5));
+            Assert.IsTrue(mainTask.IsCompleted);
+        }
+
         public void Stop()
         {
             File.WriteAllText(shutdownFilePath, null);
-        }
-
-        public void WriteEventForStartup()
-        {
-        }
-
-        public void WriteEventForAccountBalanceUpdated()
-        {
-            while (!File.Exists("log.txt"))
-            {
-            }
-            Assert.IsTrue(File.ReadAllLines("log.txt").Any(t => t.Contains("Accounts")));
         }
     }
 }

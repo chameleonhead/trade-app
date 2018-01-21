@@ -25,10 +25,9 @@ namespace TradeApp
         {
             var app = new TradeAppRunner(oanda, OANDA_OAUTH_TOKEN);
             app.Start();
-            app.WriteEventForStartup();
             oanda.HasReceivedAccountRequest();
-            app.WriteEventForAccountBalanceUpdated();
             app.Stop();
+            app.ApplicationEnded();
         }
 
         [TestCleanup]
