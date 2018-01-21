@@ -9,13 +9,15 @@ namespace TradeApp.Drivers
     {
         private HttpRequestListener httpRequestListener;
         private OandaFakeServer server;
+        private int accountId;
 
         public Uri BaseUri => server.BaseUri;
 
-        public OandaFakeServerDriver(string accessToken)
+        public OandaFakeServerDriver(string accessToken, int accountId)
         {
             httpRequestListener = new HttpRequestListener();
             server = new OandaFakeServer(accessToken, httpRequestListener);
+            this.accountId = accountId;
         }
 
         public void Start()
@@ -32,7 +34,7 @@ namespace TradeApp.Drivers
         {
             if (!httpRequestListener.Process(context =>
             {
-                Assert.IsTrue(context.Request.Path.StartsWithSegments(PathString.FromUriComponent("/v1/accounts")));
+                Assert.IsTrue(context.Request.Path.StartsWithSegments(PathString.FromUriComponent($"/v1/account/{accountId}")));
             }))
             {
                 Assert.Fail("時間内に口座残高照会のリクエストが来ていない");

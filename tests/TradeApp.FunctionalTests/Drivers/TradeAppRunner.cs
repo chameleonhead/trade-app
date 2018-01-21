@@ -10,13 +10,15 @@ namespace TradeApp.Drivers
         private string accessToken;
         private Uri oandaServerBaseUri;
         private string shutdownFilePath;
+        private int accountId;
         private Task mainTask;
 
-        public TradeAppRunner(OandaFakeServerDriver oandaServer, string accessToken)
+        public TradeAppRunner(OandaFakeServerDriver oandaServer, string accessToken, int accountId)
         {
             this.accessToken = accessToken;
             this.oandaServerBaseUri = oandaServer.BaseUri;
             this.shutdownFilePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            this.accountId = accountId;
         }
 
         public void Start()
@@ -25,6 +27,7 @@ namespace TradeApp.Drivers
                 Program.Main(new[] {
                     "--server", oandaServerBaseUri.ToString(),
                     "--token", accessToken,
+                    "--accountId", accountId.ToString(),
                     "--gracefulshutdownfile", shutdownFilePath,
                 }));
         }
