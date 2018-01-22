@@ -359,14 +359,12 @@ namespace TradeApp.Oanda
 
         private async Task InvokePrices(HttpContext context)
         {
-            var instruments = context.Request.Query["instruments"];
+            var instruments = context.Request.Query["instruments"][0].Split(",");
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             await context.Response.WriteAsync(JsonConvert.SerializeObject(new PricesResponse()
             {
-                Prices = _context.Instruments
-                    .Values
-                    .Where(inst => instruments.Contains(inst.Key))
-                    .Select(inst => _context.Prices.Find(inst.Key))
+                Prices = _context.Prices.Values
+                    .Where(p => instruments.Contains(p.Instrument))
                     .Select(price => new Price()
                     {
                         Instrument = price.Instrument,
