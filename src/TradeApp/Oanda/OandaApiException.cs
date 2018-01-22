@@ -5,7 +5,7 @@ namespace TradeApp.Oanda
     [Serializable]
     public class OandaApiException : Exception
     {
-        private OandaApiException(ErrorInfo errorInfo) : base(String.Format(errorInfo.message))
+        private OandaApiException(ErrorInfo errorInfo) : base(String.Format(errorInfo.Message))
         {
             ErrorInfo = errorInfo;
         }

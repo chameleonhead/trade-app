@@ -324,9 +324,9 @@ namespace TradeApp.Oanda
         private async Task InvokeAccounts(HttpContext context)
         {
             context.Response.StatusCode = (int)HttpStatusCode.OK;
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(new Accounts
+            await context.Response.WriteAsync(JsonConvert.SerializeObject(new AccountsResponse
             {
-                accounts = _context.Accounts.Values.Select(obj => new Account() { accountId = obj.AccountId, accountName = obj.AccountName, accountCurrency = obj.AccountCurrency, marginRate = obj.MarginRate }).ToList()
+                Accounts = _context.Accounts.Values.Select(obj => new Account() { AccountId = obj.AccountId, AccountName = obj.AccountName, AccountCurrency = obj.AccountCurrency, MarginRate = obj.MarginRate }).ToList()
             }));
         }
 
@@ -343,17 +343,17 @@ namespace TradeApp.Oanda
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             await context.Response.WriteAsync(JsonConvert.SerializeObject(new AccountDetail()
             {
-                accountId = account.AccountId,
-                accountName = account.AccountName,
-                balance = account.Balance,
-                unrealizedPl = account.UnrealizedProfitLoss,
-                realizedPl = account.RealizedProfitLoss,
-                marginUsed = account.MarginUsed,
-                marginAvail = account.MarginAvail,
-                openTrades = account.OpenTrades,
-                openOrders = account.OpenOrders,
-                marginRate = account.MarginRate,
-                accountCurrency = account.AccountCurrency,
+                AccountId = account.AccountId,
+                AccountName = account.AccountName,
+                Balance = account.Balance,
+                UnrealizedPl = account.UnrealizedProfitLoss,
+                RealizedPl = account.RealizedProfitLoss,
+                MarginUsed = account.MarginUsed,
+                MarginAvail = account.MarginAvail,
+                OpenTrades = account.OpenTrades,
+                OpenOrders = account.OpenOrders,
+                MarginRate = account.MarginRate,
+                AccountCurrency = account.AccountCurrency,
             }));
         }
 
@@ -361,18 +361,18 @@ namespace TradeApp.Oanda
         {
             var instruments = context.Request.Query["instruments"];
             context.Response.StatusCode = (int)HttpStatusCode.OK;
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(new Prices()
+            await context.Response.WriteAsync(JsonConvert.SerializeObject(new PricesResponse()
             {
-                prices = _context.Instruments
+                Prices = _context.Instruments
                     .Values
                     .Where(inst => instruments.Contains(inst.Key))
                     .Select(inst => _context.Prices.Find(inst.Key))
                     .Select(price => new Price()
                     {
-                        instrument = price.Instrument,
-                        time = price.Time,
-                        ask = price.Ask,
-                        bid = price.Bid
+                        Instrument = price.Instrument,
+                        Time = price.Time,
+                        Ask = price.Ask,
+                        Bid = price.Bid
                     }).ToList()
             }));
         }

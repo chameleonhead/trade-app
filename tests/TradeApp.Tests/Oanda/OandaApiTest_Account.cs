@@ -30,17 +30,17 @@ namespace TradeApp.Oanda
             var oandaApi = new OandaApi(_client, _server.DefaultAccountId);
             var obj = oandaApi.GetAccount().Result;
 
-            Assert.AreEqual(account.AccountId, obj.accountId);
-            Assert.AreEqual(account.AccountName, obj.accountName);
-            Assert.AreEqual(account.Balance, obj.balance);
-            Assert.AreEqual(account.UnrealizedProfitLoss, obj.unrealizedPl);
-            Assert.AreEqual(account.RealizedProfitLoss, obj.realizedPl);
-            Assert.AreEqual(account.MarginUsed, obj.marginUsed);
-            Assert.AreEqual(account.MarginAvail, obj.marginAvail);
-            Assert.AreEqual(account.OpenTrades, obj.openTrades);
-            Assert.AreEqual(account.OpenOrders, obj.openOrders);
-            Assert.AreEqual(account.MarginRate, obj.marginRate);
-            Assert.AreEqual(account.AccountCurrency, obj.accountCurrency);
+            Assert.AreEqual(account.AccountId, obj.AccountId);
+            Assert.AreEqual(account.AccountName, obj.AccountName);
+            Assert.AreEqual(account.Balance, obj.Balance);
+            Assert.AreEqual(account.UnrealizedProfitLoss, obj.UnrealizedPl);
+            Assert.AreEqual(account.RealizedProfitLoss, obj.RealizedPl);
+            Assert.AreEqual(account.MarginUsed, obj.MarginUsed);
+            Assert.AreEqual(account.MarginAvail, obj.MarginAvail);
+            Assert.AreEqual(account.OpenTrades, obj.OpenTrades);
+            Assert.AreEqual(account.OpenOrders, obj.OpenOrders);
+            Assert.AreEqual(account.MarginRate, obj.MarginRate);
+            Assert.AreEqual(account.AccountCurrency, obj.AccountCurrency);
         }
     }
 }

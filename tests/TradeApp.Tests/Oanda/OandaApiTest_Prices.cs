@@ -30,15 +30,15 @@ namespace TradeApp.Oanda
 
             var oandaApi = new OandaApi(_client, _server.DefaultAccountId);
 
-            var obj = oandaApi.GetPrices("USD_JPY").Result;
+            var prices = oandaApi.GetPrices("USD_JPY").Result;
 
-            Assert.AreEqual(1, obj.prices.Count);
+            Assert.AreEqual(1, prices.Count);
 
-            var actualPrice = obj.prices.First();
-            Assert.AreEqual("USD_JPY", actualPrice.instrument);
-            Assert.AreEqual(price.Time, actualPrice.time);
-            Assert.AreEqual(price.Ask, actualPrice.ask);
-            Assert.AreEqual(price.Bid, actualPrice.bid);
+            var actualPrice = prices.First();
+            Assert.AreEqual("USD_JPY", actualPrice.Instrument);
+            Assert.AreEqual(price.Time, actualPrice.Time);
+            Assert.AreEqual(price.Ask, actualPrice.Ask);
+            Assert.AreEqual(price.Bid, actualPrice.Bid);
         }
     }
 }

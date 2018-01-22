@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -35,19 +36,19 @@ namespace TradeApp.Oanda
             return await GetResponse<AccountDetail>($"/v1/account/{accountId}");
         }
 
-        public async Task<Prices> GetPrices(params string[] instruments)
+        public async Task<List<Price>> GetPrices(params string[] instruments)
         {
             if (instruments.Length > 0)
             {
-                return await GetResponse<Prices>($"/v1/prices?instruments={Uri.EscapeDataString(String.Join(",", instruments))}");
+                return (await GetResponse<PricesResponse>($"/v1/prices?instruments={Uri.EscapeDataString(String.Join(",", instruments))}")).Prices;
             }
             throw new ArgumentException($"{nameof(instruments)}は必ず指定してください");
         }
 
-        public async Task<Instruments> GetInstruments()
+        public async Task<List<InstrumentInfo>> GetInstruments()
         {
             var fields = string.Join(",", new[] { "instrument", "displayName", "pip", "maxTradeUnits", "precision", "maxTrailingStop", "minTrailingStop", "marginRate", "halted" });
-            return await GetResponse<Instruments>($"/v1/instruments?accountId={accountId}&fields={Uri.EscapeDataString(fields)}");
+            return (await GetResponse<InstrumentsResponse>($"/v1/instruments?accountId={accountId}&fields={Uri.EscapeDataString(fields)}")).Instruments;
         }
 
         private async Task<T> GetResponse<T>(string requestUri)
