@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\TradeApp\TradeApp.csproj" />
-    <ProjectReference Include="..\..\TradeApp.FakeOandaSrver\TradeApp.FakeOandaSrver.csproj" />
+    <ProjectReference Include="..\TradeApp.FakeOandaSrver\TradeApp.FakeOandaSrver.csproj" />
   </ItemGroup>
 
 </Project>
