@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using TradeApp.FakeOandaSrver;
 
 namespace TradeApp.Oanda
 {

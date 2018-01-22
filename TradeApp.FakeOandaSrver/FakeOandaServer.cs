@@ -9,16 +9,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using TradeApp.Oanda;
 
-namespace TradeApp.Oanda
+namespace TradeApp.FakeOandaSrver
 {
     public class FakeOandaContext
     {
         private static DateTime NOW = DateTime.Now;
 
-        public class Account
+        public class FakeOandaAccount
         {
-            public Account(int accountId, string accountName, string accountCurrency, decimal marginRate)
+            public FakeOandaAccount(int accountId, string accountName, string accountCurrency, decimal marginRate)
             {
                 AccountId = accountId;
                 AccountName = accountName;
@@ -41,9 +42,9 @@ namespace TradeApp.Oanda
             public int OpenOrders { get { return 0; } }
         }
 
-        public class Instrument
+        public class FakeOandaInstrument
         {
-            public Instrument(
+            public FakeOandaInstrument(
                 string instrument,
                 string displayName,
                 decimal pip,
@@ -81,9 +82,9 @@ namespace TradeApp.Oanda
             public decimal BaseBid { get; set; }
         }
 
-        public class Price
+        public class FakeOandaPrice
         {
-            public Price(string instrument, DateTime time, decimal ask, decimal bid)
+            public FakeOandaPrice(string instrument, DateTime time, decimal ask, decimal bid)
             {
                 Instrument = instrument;
                 Time = time;
@@ -102,11 +103,11 @@ namespace TradeApp.Oanda
             Initialize();
         }
 
-        public Account DefaultAccount { get; private set; }
+        public FakeOandaAccount DefaultAccount { get; private set; }
 
-        public Dictionary<int, Account> Accounts = new Dictionary<int, Account>();
-        public Dictionary<string, Instrument> Instruments = new Dictionary<string, Instrument>();
-        public Dictionary<string, Price> Prices = new Dictionary<string, Price>();
+        public Dictionary<int, FakeOandaAccount> Accounts = new Dictionary<int, FakeOandaAccount>();
+        public Dictionary<string, FakeOandaInstrument> Instruments = new Dictionary<string, FakeOandaInstrument>();
+        public Dictionary<string, FakeOandaPrice> Prices = new Dictionary<string, FakeOandaPrice>();
 
         public void Initialize()
         {
@@ -194,7 +195,7 @@ namespace TradeApp.Oanda
             });
         }
 
-        private Instrument CreateInstrument(
+        private FakeOandaInstrument CreateInstrument(
                 string instrument,
                 string displayName,
                 decimal pip,
@@ -206,7 +207,7 @@ namespace TradeApp.Oanda
                 decimal ask,
                 decimal bid)
         {
-            var inst = new Instrument(
+            var inst = new FakeOandaInstrument(
                 instrument,
                 displayName,
                 pip,
@@ -222,15 +223,15 @@ namespace TradeApp.Oanda
             return inst;
         }
 
-        public Account CreateAccount(int accountId, string accountName, string accountCurrency, decimal marginRate)
+        public FakeOandaAccount CreateAccount(int accountId, string accountName, string accountCurrency, decimal marginRate)
         {
-            var account = new Account(accountId, accountName, accountCurrency, marginRate);
+            var account = new FakeOandaAccount(accountId, accountName, accountCurrency, marginRate);
             Accounts.Add(account.AccountId, account);
             return account;
         }
     }
 
-    static class FakeOandaContextExtension
+    public static class FakeOandaContextExtension
     {
         public static TValue Find<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key)
         {
@@ -241,13 +242,13 @@ namespace TradeApp.Oanda
             return default(TValue);
         }
 
-        public static FakeOandaContext.Price CurrentPrice(this FakeOandaContext.Instrument instrument, DateTime time)
+        public static FakeOandaContext.FakeOandaPrice CurrentPrice(this FakeOandaContext.FakeOandaInstrument instrument, DateTime time)
         {
             var diff = ((decimal)Math.Cos(2 * Math.PI * (time.Hour / 12.0))) * instrument.BaseAsk * 0.01m;
             var ask = instrument.BaseAsk + diff;
             var bid = instrument.BaseBid + diff;
             var exp = (int)Math.Abs(Math.Log10(instrument.Precision));
-            return new FakeOandaContext.Price(instrument.Key, time, Math.Round(ask, exp), Math.Round(bid, exp));
+            return new FakeOandaContext.FakeOandaPrice(instrument.Key, time, Math.Round(ask, exp), Math.Round(bid, exp));
         }
     }
 
