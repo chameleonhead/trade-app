@@ -25,21 +25,22 @@ namespace TradeApp.Oanda
         [TestMethod]
         public void アカウントの詳細を取得する()
         {
-            var testData = FakeOandaData.CreateAccount(1, "TEST1", "USD", 0.05m);
-            var oandaApi = new OandaApi(_client, testData.AccountId);
+            var account = _server.Context.DefaultAccount;
+
+            var oandaApi = new OandaApi(_client, _server.DefaultAccountId);
             var obj = oandaApi.GetAccount().Result;
 
-            Assert.AreEqual(testData.AccountId, obj.accountId);
-            Assert.AreEqual(testData.AccountName, obj.accountName);
-            Assert.AreEqual(testData.Balance, obj.balance);
-            Assert.AreEqual(testData.UnrealizedProfitLoss, obj.unrealizedPl);
-            Assert.AreEqual(testData.RealizedProfitLoss, obj.realizedPl);
-            Assert.AreEqual(testData.MarginUsed, obj.marginUsed);
-            Assert.AreEqual(testData.MarginAvail, obj.marginAvail);
-            Assert.AreEqual(testData.OpenTrades, obj.openTrades);
-            Assert.AreEqual(testData.OpenOrders, obj.openOrders);
-            Assert.AreEqual(testData.MarginRate, obj.marginRate);
-            Assert.AreEqual(testData.AccountCurrency, obj.accountCurrency);
+            Assert.AreEqual(account.AccountId, obj.accountId);
+            Assert.AreEqual(account.AccountName, obj.accountName);
+            Assert.AreEqual(account.Balance, obj.balance);
+            Assert.AreEqual(account.UnrealizedProfitLoss, obj.unrealizedPl);
+            Assert.AreEqual(account.RealizedProfitLoss, obj.realizedPl);
+            Assert.AreEqual(account.MarginUsed, obj.marginUsed);
+            Assert.AreEqual(account.MarginAvail, obj.marginAvail);
+            Assert.AreEqual(account.OpenTrades, obj.openTrades);
+            Assert.AreEqual(account.OpenOrders, obj.openOrders);
+            Assert.AreEqual(account.MarginRate, obj.marginRate);
+            Assert.AreEqual(account.AccountCurrency, obj.accountCurrency);
         }
     }
 }

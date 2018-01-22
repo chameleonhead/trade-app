@@ -32,13 +32,37 @@ namespace TradeApp.Oanda
 
         public async Task<AccountDetail> GetAccount()
         {
-            var response = await client.GetAsync($"/v1/account/{accountId}").ConfigureAwait(false);
-            if (response.StatusCode != HttpStatusCode.OK)
+            return await GetResponse<AccountDetail>($"/v1/account/{accountId}");
+        }
+
+        public async Task<Prices> GetPrices(params string[] instruments)
+        {
+            if (instruments.Length > 0)
+            {
+                return await GetResponse<Prices>($"/v1/prices?instruments={Uri.EscapeDataString(String.Join(",", instruments))}");
+            }
+            throw new ArgumentException($"{nameof(instruments)}は必ず指定してください");
+        }
+
+        public async Task<Instruments> GetInstruments()
+        {
+            var fields = string.Join(",", new[] { "instrument", "displayName", "pip", "maxTradeUnits", "precision", "maxTrailingStop", "minTrailingStop", "marginRate", "halted" });
+            return await GetResponse<Instruments>($"/v1/instruments?accountId={accountId}&fields={Uri.EscapeDataString(fields)}");
+        }
+
+        private async Task<T> GetResponse<T>(string requestUri)
+        {
+            var response = await client.GetAsync(requestUri).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
             {
                 var errorInfo = await ConvertFromResponse<ErrorInfo>(response);
-                throw OandaApiException.FromErrorInfo(errorInfo);
+                if (errorInfo != null)
+                {
+                    throw OandaApiException.FromErrorInfo(errorInfo);
+                }
+                throw new HttpListenerException((int)response.StatusCode);
             }
-            return await ConvertFromResponse<AccountDetail>(response);
+            return await ConvertFromResponse<T>(response);
         }
 
         private async Task<T> ConvertFromResponse<T>(HttpResponseMessage response)
