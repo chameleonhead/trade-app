@@ -48,7 +48,7 @@ namespace TradeApp.FakeOandaSrver
                 decimal baseAsk,
                 decimal baseBid)
             {
-                Key = instrument;
+                Instrument = instrument;
                 DisplayName = displayName;
                 Pip = pip;
                 MaxTradeUnits = maxTradeUnits;
@@ -60,7 +60,7 @@ namespace TradeApp.FakeOandaSrver
                 BaseAsk = baseAsk;
                 BaseBid = baseBid;
             }
-            public string Key { get; private set; }
+            public string Instrument { get; private set; }
             public string DisplayName { get; private set; }
             public decimal Pip { get; private set; }
             public int MaxTradeUnits { get; private set; }
@@ -182,7 +182,7 @@ namespace TradeApp.FakeOandaSrver
 
             Instruments.Values.ToList().ForEach(i =>
             {
-                Prices.Add(i.Key, i.CurrentPrice(NOW));
+                Prices.Add(i.Instrument, i.CurrentPrice(NOW));
             });
         }
 
@@ -239,7 +239,7 @@ namespace TradeApp.FakeOandaSrver
             var ask = instrument.BaseAsk + diff;
             var bid = instrument.BaseBid + diff;
             var exp = (int)Math.Abs(Math.Log10(instrument.Precision));
-            return new FakeOandaContext.FakeOandaPrice(instrument.Key, time, Math.Round(ask, exp), Math.Round(bid, exp));
+            return new FakeOandaContext.FakeOandaPrice(instrument.Instrument, time, Math.Round(ask, exp), Math.Round(bid, exp));
         }
     }
 }

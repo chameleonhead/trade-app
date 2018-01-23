@@ -45,9 +45,13 @@ namespace TradeApp.Oanda
             throw new ArgumentException($"{nameof(instruments)}は必ず指定してください");
         }
 
-        public async Task<List<InstrumentInfo>> GetInstruments()
+        public async Task<List<InstrumentInfo>> GetInstruments(params string[] instruments)
         {
             var fields = string.Join(",", new[] { "instrument", "displayName", "pip", "maxTradeUnits", "precision", "maxTrailingStop", "minTrailingStop", "marginRate", "halted" });
+            if(instruments.Length > 0)
+            {
+                return (await GetResponse<InstrumentsResponse>($"/v1/instruments?accountId={accountId}&fields={Uri.EscapeDataString(fields)}&instruments={Uri.EscapeDataString(String.Join(",", instruments))}")).Instruments;
+            }
             return (await GetResponse<InstrumentsResponse>($"/v1/instruments?accountId={accountId}&fields={Uri.EscapeDataString(fields)}")).Instruments;
         }
 

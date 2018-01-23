@@ -101,7 +101,7 @@ namespace TradeApp.Oanda
         /// <summary>
         /// 通貨ペアの小数点精度
         /// </summary>
-        public decimal Precision { get; set; }
+        public double Precision { get; set; }
 
         /// <summary>
         /// 当該銘柄を取引する際に設定できるトレーリングストップの最大値（pips)
