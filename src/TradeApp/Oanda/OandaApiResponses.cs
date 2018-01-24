@@ -5,17 +5,24 @@ namespace TradeApp.Oanda
 {
     public class AccountsResponse
     {
-        public List<Account> Accounts { get; set; }
+        public Account[] Accounts { get; set; }
     }
 
     public class InstrumentsResponse
     {
-        public List<InstrumentInfo> Instruments { get; set; }
+        public InstrumentInfo[] Instruments { get; set; }
     }
 
     public class PricesResponse
     {
-        public List<Price> Prices { get; set; }
+        public Price[] Prices { get; set; }
+    }
+
+    public class CandleResponse<T>
+    {
+        public string Instrument { get; set; }
+        public string Granularity { get; set; }
+        public T[] Candles { get; set; }
     }
 
     /// <summary>
@@ -136,6 +143,25 @@ namespace TradeApp.Oanda
         public DateTime Time { get; set; }
         public decimal Bid { get; set; }
         public decimal Ask { get; set; }
+    }
+
+    /// <summary>
+    /// 銘柄の過去データの取得
+    /// GET /v1/candles
+    /// </summary>
+    public class CandleAskBid
+    {
+        public DateTime Time { get; set; }
+        public decimal OpenBid { get; set; }
+        public decimal OpenAsk { get; set; }
+        public decimal HighBid { get; set; }
+        public decimal HighAsk { get; set; }
+        public decimal LowBid { get; set; }
+        public decimal LowAsk { get; set; }
+        public decimal CloseBid { get; set; }
+        public decimal CloseAsk { get; set; }
+        public int Volume { get; set; }
+        public bool Complete { get; set; }
     }
 
 }

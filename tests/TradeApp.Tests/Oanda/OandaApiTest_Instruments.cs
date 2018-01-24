@@ -33,7 +33,7 @@ namespace TradeApp.Oanda
 
             var prices = oandaApi.GetInstruments("USD_JPY").Result;
 
-            Assert.AreEqual(1, prices.Count);
+            Assert.AreEqual(1, prices.Length);
 
             var actualPrice = prices.First();
             Assert.AreEqual("USD_JPY", actualPrice.Instrument);
@@ -50,14 +50,14 @@ namespace TradeApp.Oanda
         [TestMethod]
         public void 複数の銘柄を取得する()
         {
-            var expectedInstruments = _server.Context.Instruments.Where(p => p.Key == "USD_JPY" || p.Key == "EUR_USD").ToList();
-            Assert.IsTrue(expectedInstruments.Count == 2);
+            var expectedInstruments = _server.Context.Instruments.Where(p => p.Key == "USD_JPY" || p.Key == "EUR_USD").ToArray();
+            Assert.IsTrue(expectedInstruments.Length == 2);
 
             var oandaApi = new OandaApi(_client, _server.DefaultAccountId);
 
             var actualInstruments = oandaApi.GetInstruments("USD_JPY", "EUR_USD").Result;
 
-            Assert.AreEqual(expectedInstruments.Count, actualInstruments.Count);
+            Assert.AreEqual(expectedInstruments.Length, actualInstruments.Length);
             CollectionAssert.AreEqual(expectedInstruments.Select(p => p.Key).ToArray(),
                 actualInstruments.Select(p => p.Instrument).ToArray());
         }
@@ -68,7 +68,7 @@ namespace TradeApp.Oanda
             var oandaApi = new OandaApi(_client, _server.DefaultAccountId);
             var actualInstruments = oandaApi.GetInstruments().Result;
 
-            Assert.AreEqual(_server.Context.Instruments.Count, actualInstruments.Count);
+            Assert.AreEqual(_server.Context.Instruments.Count, actualInstruments.Length);
         }
     }
 }

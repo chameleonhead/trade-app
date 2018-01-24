@@ -33,7 +33,7 @@ namespace TradeApp.Oanda
 
             var prices = oandaApi.GetPrices("USD_JPY").Result;
 
-            Assert.AreEqual(1, prices.Count);
+            Assert.AreEqual(1, prices.Length);
 
             var actualPrice = prices.First();
             Assert.AreEqual("USD_JPY", actualPrice.Instrument);
@@ -45,14 +45,14 @@ namespace TradeApp.Oanda
         [TestMethod]
         public void 複数のレートを取得する()
         {
-            var expectedPrices = _server.Context.Prices.Where(p => p.Key == "USD_JPY" || p.Key == "EUR_USD").ToList();
-            Assert.IsTrue(expectedPrices.Count == 2);
+            var expectedPrices = _server.Context.Prices.Where(p => p.Key == "USD_JPY" || p.Key == "EUR_USD").ToArray();
+            Assert.IsTrue(expectedPrices.Length == 2);
 
             var oandaApi = new OandaApi(_client, _server.DefaultAccountId);
 
             var actualPrices = oandaApi.GetPrices("USD_JPY", "EUR_USD").Result;
 
-            Assert.AreEqual(expectedPrices.Count, actualPrices.Count);
+            Assert.AreEqual(expectedPrices.Length, actualPrices.Length);
             CollectionAssert.AreEqual(expectedPrices.Select(p => p.Key).ToArray(),
                 actualPrices.Select(p => p.Instrument).ToArray());
         }

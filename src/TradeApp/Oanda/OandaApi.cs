@@ -36,7 +36,7 @@ namespace TradeApp.Oanda
             return await GetResponse<AccountDetail>($"/v1/account/{accountId}");
         }
 
-        public async Task<List<Price>> GetPrices(params string[] instruments)
+        public async Task<Price[]> GetPrices(params string[] instruments)
         {
             if (instruments.Length > 0)
             {
@@ -45,7 +45,7 @@ namespace TradeApp.Oanda
             throw new ArgumentException($"{nameof(instruments)}は必ず指定してください");
         }
 
-        public async Task<List<InstrumentInfo>> GetInstruments(params string[] instruments)
+        public async Task<InstrumentInfo[]> GetInstruments(params string[] instruments)
         {
             var fields = string.Join(",", new[] { "instrument", "displayName", "pip", "maxTradeUnits", "precision", "maxTrailingStop", "minTrailingStop", "marginRate", "halted" });
             if(instruments.Length > 0)

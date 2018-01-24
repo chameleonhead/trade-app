@@ -50,7 +50,7 @@ namespace TradeApp.FakeOandaSrver
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             await context.Response.WriteAsync(JsonConvert.SerializeObject(new AccountsResponse
             {
-                Accounts = _context.Accounts.Values.Select(obj => new Account() { AccountId = obj.AccountId, AccountName = obj.AccountName, AccountCurrency = obj.AccountCurrency, MarginRate = obj.MarginRate }).ToList()
+                Accounts = _context.Accounts.Values.Select(obj => new Account() { AccountId = obj.AccountId, AccountName = obj.AccountName, AccountCurrency = obj.AccountCurrency, MarginRate = obj.MarginRate }).ToArray()
             }));
         }
 
@@ -132,7 +132,7 @@ namespace TradeApp.FakeOandaSrver
                         Time = price.Time,
                         Ask = price.Ask,
                         Bid = price.Bid
-                    }).ToList()
+                    }).ToArray()
             }));
         }
     }
