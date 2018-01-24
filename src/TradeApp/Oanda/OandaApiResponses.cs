@@ -1,28 +1,101 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace TradeApp.Oanda
 {
-    public class AccountsResponse
+    /// <summary>
+    /// それぞれのキャンドルスティックがカバーしている時間の範囲。　指定された値が、最初のキャンドルスティックのアラインメントを決定します。　
+    /// </summary>
+    public enum Granularity
     {
-        public Account[] Accounts { get; set; }
-    }
-
-    public class InstrumentsResponse
-    {
-        public InstrumentInfo[] Instruments { get; set; }
-    }
-
-    public class PricesResponse
-    {
-        public Price[] Prices { get; set; }
-    }
-
-    public class CandleResponse<T>
-    {
-        public string Instrument { get; set; }
-        public string Granularity { get; set; }
-        public T[] Candles { get; set; }
+        //１分の初めにアライン
+        /// <summary>
+        ///5 秒
+        /// </summary>
+        S5,
+        /// <summary>
+        ///10 秒
+        /// </summary>
+        S10,
+        /// <summary>
+        ///15 秒
+        /// </summary>
+        S15,
+        /// <summary>
+        ///30 秒
+        /// </summary>
+        S30,
+        /// <summary>
+        ///1 分
+        /// </summary>
+        M1,
+        //1時間の初めにアライン
+        /// <summary>
+        ///2 分
+        /// </summary>
+        M2,
+        /// <summary>
+        ///3 分
+        /// </summary>
+        M3,
+        /// <summary>
+        ///5 分
+        /// </summary>
+        M5,
+        /// <summary>
+        ///10 分
+        /// </summary>
+        M10,
+        /// <summary>
+        ///15 分
+        /// </summary>
+        M15,
+        /// <summary>
+        ///30 分
+        /// </summary>
+        M30,
+        /// <summary>
+        ///1 時間
+        /// </summary>
+        H1,
+        //1日の初めにアライン(17:00, 米国東部標準時)
+        /// <summary>
+        ///2 時間
+        /// </summary>
+        H2,
+        /// <summary>
+        ///3 時間
+        /// </summary>
+        H3,
+        /// <summary>
+        ///4 時間
+        /// </summary>
+        H4,
+        /// <summary>
+        ///6 時間
+        /// </summary>
+        H6,
+        /// <summary>
+        ///8 時間
+        /// </summary>
+        H8,
+        /// <summary>
+        ///12 時間
+        /// </summary>
+        H12,
+        /// <summary>
+        ///1 日
+        /// </summary>
+        D,
+        //1週間の初めにアライン (土曜日)
+        /// <summary>
+        ///1 週
+        /// </summary>
+        W,
+        //1か月の初めにアライン (その月の最初の日)
+        /// <summary>
+        ///1 か月
+        /// </summary>
+        M,
     }
 
     /// <summary>
@@ -149,7 +222,7 @@ namespace TradeApp.Oanda
     /// 銘柄の過去データの取得
     /// GET /v1/candles
     /// </summary>
-    public class CandleAskBid
+    public class BidAskCandle
     {
         public DateTime Time { get; set; }
         public decimal OpenBid { get; set; }
@@ -164,4 +237,14 @@ namespace TradeApp.Oanda
         public bool Complete { get; set; }
     }
 
+    public class MidCandle
+    {
+        public DateTime Time { get; set; }
+        public decimal OpenMid { get; set; }
+        public decimal HighMid { get; set; }
+        public decimal LowMid { get; set; }
+        public decimal CloseMid { get; set; }
+        public int Volume { get; set; }
+        public bool Complete { get; set; }
+    }
 }

@@ -48,7 +48,7 @@ namespace TradeApp.FakeOandaSrver
         private async Task InvokeAccounts(HttpContext context)
         {
             context.Response.StatusCode = (int)HttpStatusCode.OK;
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(new AccountsResponse
+            await context.Response.WriteAsync(JsonConvert.SerializeObject(new
             {
                 Accounts = _context.Accounts.Values.Select(obj => new Account() { AccountId = obj.AccountId, AccountName = obj.AccountName, AccountCurrency = obj.AccountCurrency, MarginRate = obj.MarginRate }).ToArray()
             }));
@@ -122,7 +122,7 @@ namespace TradeApp.FakeOandaSrver
         {
             var instruments = context.Request.Query["instruments"][0].Split(",");
             context.Response.StatusCode = (int)HttpStatusCode.OK;
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(new PricesResponse()
+            await context.Response.WriteAsync(JsonConvert.SerializeObject(new
             {
                 Prices = _context.Prices.Values
                     .Where(p => instruments.Contains(p.Instrument))
