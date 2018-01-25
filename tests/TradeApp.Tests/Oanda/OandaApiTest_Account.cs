@@ -1,5 +1,5 @@
-﻿using System.Net.Http;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Net.Http;
 using TradeApp.FakeOandaSrver;
 
 namespace TradeApp.Oanda

@@ -237,7 +237,7 @@ namespace TradeApp.Oanda
         public DateTime? Complete { get; set; }
     }
 
-    public class MidCandle
+    public class MidpointCandle
     {
         public DateTime Time { get; set; }
         public decimal OpenMid { get; set; }
@@ -245,6 +245,6 @@ namespace TradeApp.Oanda
         public decimal LowMid { get; set; }
         public decimal CloseMid { get; set; }
         public int Volume { get; set; }
-        public bool Complete { get; set; }
+        public DateTime? Complete { get; set; }
     }
 }

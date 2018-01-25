@@ -91,7 +91,7 @@ namespace TradeApp.Oanda
             return await GetCandlesImpl<BidAskCandle>(instrument, granularity, count, start, end, includeFirst, dailyAlignment, alignmentTimezone, weeklyAlignment);
         }
 
-        public async Task<MidCandle[]> GetMidCandles(
+        public async Task<MidpointCandle[]> GetMidpointCandles(
             string instrument,
             Granularity granularity = Granularity.S5,
             int count = 500,
@@ -102,7 +102,7 @@ namespace TradeApp.Oanda
             string alignmentTimezone = "America/New_York",
             string weeklyAlignment = "Friday")
         {
-            return await GetCandlesImpl<MidCandle>(instrument, granularity, count, start, end, includeFirst, dailyAlignment, alignmentTimezone, weeklyAlignment);
+            return await GetCandlesImpl<MidpointCandle>(instrument, granularity, count, start, end, includeFirst, dailyAlignment, alignmentTimezone, weeklyAlignment);
         }
 
         private async Task<T[]> GetCandlesImpl<T>(
@@ -120,7 +120,7 @@ namespace TradeApp.Oanda
             query.Append($"/v1/candles?instrument={instrument}");
             if (typeof(T) == typeof(BidAskCandle))
                 query.Append("&candleFormat=bidask");
-            if (typeof(T) == typeof(MidCandle))
+            if (typeof(T) == typeof(MidpointCandle))
                 query.Append("&candleFormat=midpoint");
 
             if (granularity != Granularity.S5)

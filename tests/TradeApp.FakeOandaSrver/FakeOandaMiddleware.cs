@@ -145,6 +145,7 @@ namespace TradeApp.FakeOandaSrver
         private async Task InvokeCandles(HttpContext context)
         {
             var instrument = (string)context.Request.Query["instrument"];
+            var candleFormat = ((string)context.Request.Query["candleFormat"]) ?? "bidask";
             var inst = _context.Instruments.Find(instrument);
             if (inst == null)
             {
@@ -193,8 +194,51 @@ namespace TradeApp.FakeOandaSrver
                 end = new DateTime((end.Value.Ticks / TimeSpan.FromSeconds(5).Ticks) * TimeSpan.FromSeconds(5).Ticks);
                 start = end - (interval * count);
             }
+            if (candleFormat == "bidask")
+            {
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(new
+                {
+                    instrument = instrument,
+                    granularity = granularity.ToString(),
+                    candles = CreateCandles(inst, interval, count, start, end, (d, open, high, low, close, volume) => new BidAskCandle()
+                    {
+                        Time = d,
+                        OpenAsk = open.Ask,
+                        OpenBid = open.Bid,
+                        HighAsk = high.Ask,
+                        HighBid = high.Bid,
+                        LowAsk = low.Ask,
+                        LowBid = low.Bid,
+                        CloseAsk = close.Ask,
+                        CloseBid = close.Bid,
+                        Volume = volume,
+                    })
+                }));
+            }
+            else
+            {
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(new
+                {
+                    instrument = instrument,
+                    granularity = granularity.ToString(),
+                    candles = CreateCandles(inst, interval, count, start, end, (d, open, high, low, close, volume) => new MidpointCandle()
+                    {
+                        Time = d,
+                        OpenMid = (open.Ask + open.Bid) / 2,
+                        HighMid = (high.Ask + high.Bid) / 2,
+                        LowMid = (low.Ask + low.Bid) / 2,
+                        CloseMid = (close.Ask + close.Bid) / 2,
+                        Volume = volume,
+                    })
+                }));
+            }
+
+        }
+
+        private static T[] CreateCandles<T>(FakeOandaContext.FakeOandaInstrument inst, TimeSpan interval, int count, DateTime? start, DateTime? end, Func<DateTime, FakeOandaContext.FakeOandaPrice, FakeOandaContext.FakeOandaPrice, FakeOandaContext.FakeOandaPrice, FakeOandaContext.FakeOandaPrice, int, T> factory)
+        {
             var i = 0;
-            var result = new BidAskCandle[count];
+            var result = new T[count];
             for (var d = start.Value; d < end.Value; d += interval)
             {
                 var open = inst.CurrentPrice(d);
@@ -213,26 +257,10 @@ namespace TradeApp.FakeOandaSrver
                     low = open;
                 }
 
-                result[i++] = new BidAskCandle()
-                {
-                    Time = d,
-                    OpenAsk = open.Ask,
-                    OpenBid = open.Bid,
-                    HighAsk = high.Ask,
-                    HighBid = high.Bid,
-                    LowAsk = low.Ask,
-                    LowBid = low.Bid,
-                    CloseAsk = close.Ask,
-                    CloseBid = close.Bid,
-                    Volume = (d.Hour + 120) * 200,
-                };
+                result[i++] = factory(d, open, high, low, close, (d.Hour + 120) * 200);
             }
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(new
-            {
-                instrument = instrument,
-                granularity = granularity.ToString(),
-                candles = result
-            }));
+
+            return result;
         }
 
         private T ParseQuery<T>(string s)

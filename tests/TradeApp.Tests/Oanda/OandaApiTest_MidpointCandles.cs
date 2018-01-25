@@ -5,7 +5,7 @@ using TradeApp.FakeOandaSrver;
 namespace TradeApp.Oanda
 {
     [TestClass]
-    public class OandaApiTest_BidAskCandles
+    public class OandaApiTest_MidpointCandles
     {
         private FakeOandaServer _server;
         private HttpClient _client;
@@ -28,7 +28,7 @@ namespace TradeApp.Oanda
         {
             var oandaApi = new OandaApi(_client, _server.DefaultAccountId);
 
-            var candles = oandaApi.GetBidAskCandles("USD_JPY", count: 10).Result;
+            var candles = oandaApi.GetMidpointCandles("USD_JPY", count: 10).Result;
             Assert.AreEqual(10, candles.Length);
         }
     }
