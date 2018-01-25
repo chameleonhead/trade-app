@@ -11,91 +11,91 @@ namespace TradeApp.Oanda
         /// <summary>
         ///5 秒
         /// </summary>
-        S5,
+        S5 = 5,
         /// <summary>
         ///10 秒
         /// </summary>
-        S10,
+        S10 = 10,
         /// <summary>
         ///15 秒
         /// </summary>
-        S15,
+        S15 = 15,
         /// <summary>
         ///30 秒
         /// </summary>
-        S30,
+        S30 = 30,
         /// <summary>
         ///1 分
         /// </summary>
-        M1,
+        M1 = 60,
         //1時間の初めにアライン
         /// <summary>
         ///2 分
         /// </summary>
-        M2,
+        M2 = 2 * 60,
         /// <summary>
         ///3 分
         /// </summary>
-        M3,
+        M3 = 3 * 60,
         /// <summary>
         ///5 分
         /// </summary>
-        M5,
+        M5 = 5 * 60,
         /// <summary>
         ///10 分
         /// </summary>
-        M10,
+        M10 = 10 * 60,
         /// <summary>
         ///15 分
         /// </summary>
-        M15,
+        M15 = 15 * 60,
         /// <summary>
         ///30 分
         /// </summary>
-        M30,
+        M30 = 30 * 60,
         /// <summary>
         ///1 時間
         /// </summary>
-        H1,
+        H1 = 60 * 60,
         //1日の初めにアライン(17:00, 米国東部標準時)
         /// <summary>
         ///2 時間
         /// </summary>
-        H2,
+        H2 = 2 * 60 * 60,
         /// <summary>
         ///3 時間
         /// </summary>
-        H3,
+        H3 = 3 * 60 * 60,
         /// <summary>
         ///4 時間
         /// </summary>
-        H4,
+        H4 = 4 * 60 * 60,
         /// <summary>
         ///6 時間
         /// </summary>
-        H6,
+        H6 = 6 * 60 * 60,
         /// <summary>
         ///8 時間
         /// </summary>
-        H8,
+        H8 = 8 * 60 * 60,
         /// <summary>
         ///12 時間
         /// </summary>
-        H12,
+        H12 = 12 * 60 * 60,
         /// <summary>
         ///1 日
         /// </summary>
-        D,
+        D = 24 * 60 * 60,
         //1週間の初めにアライン (土曜日)
         /// <summary>
         ///1 週
         /// </summary>
-        W,
+        W = 7 * 24 * 60 * 60,
         //1か月の初めにアライン (その月の最初の日)
         /// <summary>
         ///1 か月
         /// </summary>
-        M,
+        M = -1,
     }
 
     /// <summary>
@@ -234,7 +234,7 @@ namespace TradeApp.Oanda
         public decimal CloseBid { get; set; }
         public decimal CloseAsk { get; set; }
         public int Volume { get; set; }
-        public bool Complete { get; set; }
+        public DateTime? Complete { get; set; }
     }
 
     public class MidCandle

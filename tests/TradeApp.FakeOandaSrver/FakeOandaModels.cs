@@ -6,7 +6,12 @@ namespace TradeApp.FakeOandaSrver
 {
     public class FakeOandaContext
     {
-        private static DateTime NOW = DateTime.Now;
+        private static DateTime NOW;
+        static FakeOandaContext()
+        {
+            var d = DateTime.Now;
+            NOW = new DateTime((d.Ticks / TimeSpan.FromSeconds(1).Ticks) * TimeSpan.FromSeconds(1).Ticks);
+        }
 
         public class FakeOandaAccount
         {
@@ -95,6 +100,7 @@ namespace TradeApp.FakeOandaSrver
         }
 
         public FakeOandaAccount DefaultAccount { get; private set; }
+        public DateTime CurrentTime { get { return NOW; } }
 
         public Dictionary<int, FakeOandaAccount> Accounts = new Dictionary<int, FakeOandaAccount>();
         public Dictionary<string, FakeOandaInstrument> Instruments = new Dictionary<string, FakeOandaInstrument>();

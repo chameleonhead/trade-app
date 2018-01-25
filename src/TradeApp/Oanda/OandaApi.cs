@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -26,7 +25,7 @@ namespace TradeApp.Oanda
             public Price[] Prices { get; set; }
         }
 
-        private abstract class CandlesResponse<T>
+        private class CandlesResponse<T>
         {
             public string Instrument { get; set; }
             public string Granularity { get; set; }

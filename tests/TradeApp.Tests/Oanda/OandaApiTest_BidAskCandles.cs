@@ -1,6 +1,6 @@
-﻿using System.Net.Http;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Linq;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Net.Http;
 using TradeApp.FakeOandaSrver;
 
 namespace TradeApp.Oanda
@@ -29,9 +29,8 @@ namespace TradeApp.Oanda
         {
             var oandaApi = new OandaApi(_client, _server.DefaultAccountId);
 
-            var candles = oandaApi.GetBidAskCandles("USD_JPY").Result;
-
-            Assert.AreEqual(1, candles.Length);
+            var candles = oandaApi.GetBidAskCandles("USD_JPY", count: 10).Result;
+            Assert.AreEqual(10, candles.Length);
         }
     }
 }
