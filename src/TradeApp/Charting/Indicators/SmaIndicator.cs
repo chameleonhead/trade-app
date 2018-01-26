@@ -2,7 +2,7 @@
 
 namespace TradeApp.Charting.Indicators
 {
-    public class SmaIndicator : IIndicator<decimal, decimal?>
+    public class SmaIndicator : IIndicator<decimal, decimal>
     {
         private Queue<decimal> samples;
         private decimal total;
@@ -14,7 +14,7 @@ namespace TradeApp.Charting.Indicators
             this.period = period;
         }
 
-        public decimal? NextValue(decimal data)
+        public decimal NextValue(decimal data)
         {
             total += data;
             samples.Enqueue(data);
