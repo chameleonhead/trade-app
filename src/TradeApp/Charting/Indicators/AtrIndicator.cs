@@ -29,7 +29,6 @@ namespace TradeApp.Charting.Indicators
                 }.Max();
             previous = data;
 
-            // http://en.wikipedia.org/wiki/Average_true_range
             if (currentIndex <= period)
             {
                 averageTrueRange = smaIndicator.NextValue(trueRange);

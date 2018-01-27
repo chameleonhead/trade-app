@@ -173,6 +173,11 @@ namespace TradeApp.FakeOandaSrver
             var start = ParseQuery<DateTime?>(context.Request.Query["start"]);
             var end = ParseQuery<DateTime?>(context.Request.Query["end"]);
 
+            if (start != null && end != null)
+            {
+                count = (int)Math.Ceiling((end.Value - start.Value) / interval);
+            }
+
             if (start == null && end == null)
             {
                 end = _context.CurrentTime;

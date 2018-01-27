@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -33,13 +34,17 @@ namespace TradeApp.Oanda
         }
 
         HttpClient client;
-        int accountId;
+        int? accountId;
+
+        public OandaApi(Uri baseUri, string accessToken) : this(CreateClient(baseUri, accessToken), null)
+        {
+        }
 
         public OandaApi(Uri baseUri, string accessToken, int accountId) : this(CreateClient(baseUri, accessToken), accountId)
         {
         }
 
-        public OandaApi(HttpClient client, int accountId)
+        public OandaApi(HttpClient client, int? accountId)
         {
             this.client = client;
             this.accountId = accountId;
@@ -53,11 +58,6 @@ namespace TradeApp.Oanda
             return client;
         }
 
-        public async Task<AccountDetail> GetAccount()
-        {
-            return await GetResponse<AccountDetail>($"/v1/account/{accountId}");
-        }
-
         public async Task<Price[]> GetPrices(params string[] instruments)
         {
             if (instruments.Length > 0)
@@ -65,16 +65,6 @@ namespace TradeApp.Oanda
                 return (await GetResponse<PricesResponse>($"/v1/prices?instruments={Uri.EscapeDataString(String.Join(",", instruments))}")).Prices;
             }
             throw new ArgumentException($"{nameof(instruments)}は必ず指定してください");
-        }
-
-        public async Task<InstrumentInfo[]> GetInstruments(params string[] instruments)
-        {
-            var fields = string.Join(",", new[] { "instrument", "displayName", "pip", "maxTradeUnits", "precision", "maxTrailingStop", "minTrailingStop", "marginRate", "halted" });
-            if (instruments.Length > 0)
-            {
-                return (await GetResponse<InstrumentsResponse>($"/v1/instruments?accountId={accountId}&fields={Uri.EscapeDataString(fields)}&instruments={Uri.EscapeDataString(String.Join(",", instruments))}")).Instruments;
-            }
-            return (await GetResponse<InstrumentsResponse>($"/v1/instruments?accountId={accountId}&fields={Uri.EscapeDataString(fields)}")).Instruments;
         }
 
         public async Task<BidAskCandle[]> GetBidAskCandles(
@@ -143,11 +133,35 @@ namespace TradeApp.Oanda
             return (await GetResponse<CandlesResponse<T>>(query.ToString())).Candles;
         }
 
+        public async Task<InstrumentInfo[]> GetInstruments(params string[] instruments)
+        {
+            var accountId = RequireAccountId();
+            var fields = string.Join(",", new[] { "instrument", "displayName", "pip", "maxTradeUnits", "precision", "maxTrailingStop", "minTrailingStop", "marginRate", "halted" });
+            if (instruments.Length > 0)
+            {
+                return (await GetResponse<InstrumentsResponse>($"/v1/instruments?accountId={accountId}&fields={Uri.EscapeDataString(fields)}&instruments={Uri.EscapeDataString(String.Join(",", instruments))}")).Instruments;
+            }
+            return (await GetResponse<InstrumentsResponse>($"/v1/instruments?accountId={accountId}&fields={Uri.EscapeDataString(fields)}")).Instruments;
+        }
+
+        public async Task<AccountDetail> GetAccount()
+        {
+            var accountId = RequireAccountId();
+            return await GetResponse<AccountDetail>($"/v1/account/{accountId}");
+        }
+
+        private int RequireAccountId()
+        {
+            return accountId ?? throw new InvalidOperationException("Must specify accountId with this operation");
+        }
+
         private async Task<T> GetResponse<T>(string requestUri)
         {
+            Debug.WriteLine(requestUri);
             var response = await client.GetAsync(requestUri).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
+                Trace.TraceError(response.Content.ReadAsStringAsync().Result);
                 var errorInfo = await ConvertFromResponse<ErrorInfo>(response);
                 if (errorInfo != null)
                 {

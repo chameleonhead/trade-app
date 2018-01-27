@@ -7,13 +7,13 @@ namespace TradeApp.Oanda
     [TestClass]
     public class OandaApiTest_BidAskCandles
     {
-        private FakeOandaServer _server;
+        private FakeOandaTestServer _server;
         private HttpClient _client;
 
         [TestInitialize]
         public void Setup()
         {
-            _server = new FakeOandaServer();
+            _server = new FakeOandaTestServer();
             _client = _server.CreateClient();
         }
 
