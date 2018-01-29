@@ -1,14 +1,17 @@
 ﻿using System;
 using TradeApp.Oanda;
 
-namespace TradeApp.Charting
+namespace TradeApp.Charting.Providers
 {
     public abstract class CandleProvider
     {
         public abstract Candle[] GetCandles(TradingSymbol symbol, DateTime from, DateTime to, ChartRange range);
+    }
 
+    public static class CandleProviderFactory
+    {
 
-        public static CandleProvider Get(string connectionString)
+        public static CandleProvider GetInstance(string connectionString)
         {
             return OandaCandleProviderFactory.GetInstance(connectionString);
         }

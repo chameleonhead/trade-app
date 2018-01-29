@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TradeApp.Charting;
+using TradeApp.Charting.Providers;
 
 namespace TradeApp.Oanda
 {

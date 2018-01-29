@@ -1,15 +1,14 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TradeApp.Charting;
 
-namespace TradeApp.Infrastructure
+namespace TradeApp.Charting.Providers
 {
     [TestClass]
-    public class CandleProviderTest
+    public class CandleProviderFactoryTest
     {
         [TestMethod]
         public void OANDAのキャンドルプロバイダーを指定する文字列を設定しOANDAのキャンドルプロバイダーが取得できる()
         {
-            var sut = CandleProvider.Get("provider=OANDA;server=https://servername;token=token");
+            var sut = CandleProviderFactory.GetInstance("provider=OANDA;server=https://servername;token=token");
             Assert.IsNotNull(sut);
             Assert.AreEqual("OandaCandleProvider", sut.GetType().Name);
         }
