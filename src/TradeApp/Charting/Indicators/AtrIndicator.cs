@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace TradeApp.Charting.Indicators
 {
-    public class AtrIndicator : IIndicator<Candle, SingleValue>
+    public class AtrIndicator : IChartIndicator<SingleValue>
     {
         private Candle previous;
         private decimal averageTrueRange;
@@ -31,7 +31,7 @@ namespace TradeApp.Charting.Indicators
 
             if (currentIndex <= period)
             {
-                averageTrueRange = smaIndicator.Next(new SingleValue(data.Time, trueRange)).Value;
+                averageTrueRange = smaIndicator.Next(trueRange);
                 return null;
             }
 

@@ -2,15 +2,7 @@
 
 namespace TradeApp.Charting.Data
 {
-    public class CandleStoreInitializer
-    {
-        public static void Initialize(CandleStore context)
-        {
-            context.Database.EnsureCreated();
-        }
-    }
-
-    public class CandleStore : DbContext
+    public class CandleChartStore : DbContext
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -27,10 +19,13 @@ namespace TradeApp.Charting.Data
 
         public DbSet<ChartEntryEntity> ChartEntries { get; set; }
         public DbSet<CandleEntity> Candles { get; set; }
+    }
 
-        public void AddChart()
+    public class CandleStoreInitializer
+    {
+        public static void Initialize(CandleChartStore context)
         {
-
+            context.Database.EnsureCreated();
         }
     }
 }

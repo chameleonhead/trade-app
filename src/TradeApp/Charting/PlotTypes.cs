@@ -2,7 +2,12 @@
 
 namespace TradeApp.Charting
 {
-    public class Candle
+    public interface IPlotType
+    {
+        DateTime Time { get; }
+    }
+
+    public class Candle : IPlotType
     {
         public Candle(DateTime time, decimal open, decimal high, decimal low, decimal close, int volume)
         {
@@ -22,7 +27,7 @@ namespace TradeApp.Charting
         public int Volume { get; }
     }
 
-    public class SingleValue
+    public class SingleValue : IPlotType
     {
         public SingleValue(DateTime time, decimal value)
         {

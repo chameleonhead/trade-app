@@ -1,18 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.IO;
 using System.Linq;
 
 namespace TradeApp.Charting.Data
 {
     [TestClass]
-    public class CandleStoreTest
+    public class CandleChartStoreTest
     {
         [TestInitialize]
         public void Setup()
         {
-            using (var context = new CandleStore())
+            using (var context = new CandleChartStore())
             {
                 CandleStoreInitializer.Initialize(context);
             }
@@ -21,7 +19,7 @@ namespace TradeApp.Charting.Data
         [TestCleanup]
         public void Teardown()
         {
-            using (var context = new CandleStore())
+            using (var context = new CandleChartStore())
             {
                 context.Database.EnsureDeleted();
             }
@@ -35,13 +33,13 @@ namespace TradeApp.Charting.Data
                 Symbol = "USD_JPY",
                 Range = ChartRange.Hourly
             };
-            using (var context = new CandleStore())
+            using (var context = new CandleChartStore())
             {
                 context.ChartEntries.Add(entry);
                 context.SaveChanges();
             }
 
-            using (var context = new CandleStore())
+            using (var context = new CandleChartStore())
             {
                 Assert.IsNotNull(context.ChartEntries.Find(entry.Id));
             }
@@ -66,13 +64,13 @@ namespace TradeApp.Charting.Data
                 Volume = 5,
             });
 
-            using (var context = new CandleStore())
+            using (var context = new CandleChartStore())
             {
                 context.ChartEntries.Add(entry);
                 context.SaveChanges();
             }
 
-            using (var context = new CandleStore())
+            using (var context = new CandleChartStore())
             {
                 var chart = context.ChartEntries.Find(entry.Id);
                 context.Entry(chart).Collection(ce => ce.Candles).Load();
