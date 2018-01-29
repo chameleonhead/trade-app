@@ -49,7 +49,7 @@ namespace TradeApp.Charting.Indicators
             var sut = new AtrIndicator(14);
             for (var i = 0; i < 14; i++)
             {
-                Assert.AreEqual(null, sut.NextValue(CANDLES[i]));
+                Assert.AreEqual(null, sut.Next(CANDLES[i]));
             }
         }
 
@@ -79,12 +79,12 @@ namespace TradeApp.Charting.Indicators
             var sut = new AtrIndicator(14);
             for (var i = 0; i < 14; i++)
             {
-                sut.NextValue(CANDLES[i]);
+                sut.Next(CANDLES[i]);
             }
 
             for (var i = 14; i < 14 + expected.Length; i++)
             {
-                Assert.AreEqual(expected[i - 14], Math.Round(sut.NextValue(CANDLES[i]).Value, 4));
+                Assert.AreEqual(expected[i - 14], Math.Round(sut.Next(CANDLES[i]).Value, 4));
             }
         }
     }

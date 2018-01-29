@@ -17,7 +17,9 @@ namespace TradeApp.Charting.Indicators
             this.smaIndicator = new SmaIndicator(period);
         }
 
-        public decimal? NextValue(Candle data)
+        public decimal? Last => averageTrueRange;
+
+        public decimal? Next(Candle data)
         {
             currentIndex++;
             var trueRange = previous == null
@@ -31,12 +33,12 @@ namespace TradeApp.Charting.Indicators
 
             if (currentIndex <= period)
             {
-                averageTrueRange = smaIndicator.NextValue(trueRange);
+                averageTrueRange = smaIndicator.Next(trueRange);
                 return null;
             }
 
             averageTrueRange = (averageTrueRange * (period - 1) + trueRange) / period;
-            return averageTrueRange;
+            return Last;
         }
     }
 }

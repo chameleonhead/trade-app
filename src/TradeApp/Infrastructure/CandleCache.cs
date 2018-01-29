@@ -33,7 +33,7 @@ namespace TradeApp.Infrastructure
             public DateTime End { get; }
         }
 
-        private Dictionary<Tuple<TradingSymbol, TimeSpan>, List<CandleCachRegistry>> registries = new Dictionary<Tuple<TradingSymbol, TimeSpan>, List<CandleCachRegistry>>();
+        private Dictionary<Tuple<TradingSymbol, ChartRange>, List<CandleCachRegistry>> registries = new Dictionary<Tuple<TradingSymbol, ChartRange>, List<CandleCachRegistry>>();
         private Dictionary<int, List<Candle>> caches = new Dictionary<int, List<Candle>>();
         private CandleProvider provider;
 
@@ -42,12 +42,12 @@ namespace TradeApp.Infrastructure
             this.provider = provider;
         }
 
-        public Candle[] GetCandles(TradingSymbol symbol, DateTime from, DateTime to, TimeSpan span)
+        public Candle[] GetCandles(TradingSymbol symbol, DateTime from, DateTime to, ChartRange range)
         {
-            if (!registries.TryGetValue(Tuple.Create(symbol, span), out var candleRegistries))
+            if (!registries.TryGetValue(Tuple.Create(symbol, range), out var candleRegistries))
             {
                 candleRegistries = new List<CandleCachRegistry>();
-                registries.Add(Tuple.Create(symbol, span), candleRegistries);
+                registries.Add(Tuple.Create(symbol, range), candleRegistries);
             }
 
             var candleRegistry = candleRegistries.Where(r => r.Start <= from && r.End >= to).FirstOrDefault();
@@ -56,7 +56,7 @@ namespace TradeApp.Infrastructure
                 return caches[candleRegistry.Id].Where(r => r.Time >= from && r.Time <= to).ToArray();
             }
 
-            var candles = provider.GetCandles(symbol, from, to, span);
+            var candles = provider.GetCandles(symbol, from, to, range);
             var newRegistry = CandleCachRegistry.New(from, to);
             candleRegistries.Add(newRegistry);
             caches[newRegistry.Id] = candles.ToList();

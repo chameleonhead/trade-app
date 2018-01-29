@@ -2,6 +2,7 @@
 {
     public interface IIndicator<in TIn, out TOut>
     {
-        TOut NextValue(TIn data);
+        TOut Last { get; }
+        TOut Next(TIn data);
     }
 }

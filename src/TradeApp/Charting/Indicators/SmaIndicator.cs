@@ -14,7 +14,9 @@ namespace TradeApp.Charting.Indicators
             this.period = period;
         }
 
-        public decimal NextValue(decimal data)
+        public decimal Last => total / period;
+
+        public decimal Next(decimal data)
         {
             total += data;
             samples.Enqueue(data);
@@ -25,7 +27,7 @@ namespace TradeApp.Charting.Indicators
             }
 
             total -= samples.Dequeue();
-            return total / period;
+            return Last;
         }
     }
 }

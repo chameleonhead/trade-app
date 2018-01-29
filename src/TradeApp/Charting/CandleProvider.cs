@@ -5,7 +5,7 @@ namespace TradeApp.Charting
 {
     public abstract class CandleProvider
     {
-        public abstract Candle[] GetCandles(TradingSymbol symbol, DateTime from, DateTime to, TimeSpan span);
+        public abstract Candle[] GetCandles(TradingSymbol symbol, DateTime from, DateTime to, ChartRange range);
 
 
         public static CandleProvider Get(string connectionString)

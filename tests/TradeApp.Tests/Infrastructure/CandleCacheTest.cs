@@ -10,7 +10,7 @@ namespace TradeApp.Infrastructure
     {
         TradingSymbol symbol;
         DateTime from, to;
-        TimeSpan span;
+        ChartRange range;
         Mock<CandleProvider> mock;
 
         [TestInitialize]
@@ -19,13 +19,13 @@ namespace TradeApp.Infrastructure
             symbol = new TradingSymbol("USD_JPY");
             from = new DateTime(2017, 1, 1, 1, 1, 1, DateTimeKind.Utc);
             to = new DateTime(2017, 1, 1, 1, 1, 50, DateTimeKind.Utc);
-            span = TimeSpan.FromSeconds(5);
+            range = ChartRange.Hourly;
             mock = new Mock<CandleProvider>();
             mock.Setup(m => m.GetCandles(
                 It.Is<TradingSymbol>(o => o.Equals(symbol)),
                 It.Is<DateTime>(o => o.Equals(from)),
                 It.Is<DateTime>(o => o.Equals(to)),
-                It.Is<TimeSpan>(o => o.Equals(span))))
+                It.Is<ChartRange>(o => o.Equals(range))))
                 .Returns(new Candle[0]);
         }
 
@@ -33,7 +33,7 @@ namespace TradeApp.Infrastructure
         public void キャッシュが存在しない場合にデータを自動的に取得する()
         {
             var sut = new CandleCache(mock.Object);
-            sut.GetCandles(symbol, from, to, span);
+            sut.GetCandles(symbol, from, to, range);
             mock.VerifyAll();
         }
 
@@ -41,15 +41,15 @@ namespace TradeApp.Infrastructure
         public void キャッシュが存在する場合にデータを自動的に取得する()
         {
             var sut = new CandleCache(mock.Object);
-            sut.GetCandles(symbol, from, to, span);
+            sut.GetCandles(symbol, from, to, range);
 
-            mock.Reset();
-            sut.GetCandles(symbol, from, to, span);
+            mock.ResetCalls();
+            sut.GetCandles(symbol, from, to, range);
             mock.Verify(m => m.GetCandles(
                 It.IsAny<TradingSymbol>(),
                 It.IsAny<DateTime>(),
                 It.IsAny<DateTime>(),
-                It.IsAny<TimeSpan>()), Times.Never);
+                It.IsAny<ChartRange>()), Times.Never);
         }
     }
 }

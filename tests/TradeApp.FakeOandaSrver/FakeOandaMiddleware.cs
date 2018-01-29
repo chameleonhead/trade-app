@@ -175,17 +175,19 @@ namespace TradeApp.FakeOandaSrver
 
             if (start != null && end != null)
             {
-                count = (int)Math.Ceiling((end.Value - start.Value) / interval);
+                count = 0;
+                for (var d = start; d <= end; d += interval) count++;
             }
 
             if (start == null && end == null)
             {
-                end = _context.CurrentTime;
+                end = new DateTime((_context.CurrentTime.Ticks / TimeSpan.FromSeconds((int)granularity).Ticks) * TimeSpan.FromSeconds((int)granularity).Ticks);
+                start = end.Value - (interval * (count - 1));
             }
 
             if (start != null && end == null)
             {
-                start = new DateTime((start.Value.Ticks / TimeSpan.FromSeconds(5).Ticks) * TimeSpan.FromSeconds(5).Ticks);
+                start = new DateTime((start.Value.Ticks / TimeSpan.FromSeconds((int)granularity).Ticks) * TimeSpan.FromSeconds((int)granularity).Ticks);
                 end = (includeFirst ? start : (start + interval)) + (interval * count);
                 if (end > _context.CurrentTime)
                 {
@@ -196,7 +198,7 @@ namespace TradeApp.FakeOandaSrver
 
             if (start == null && end != null)
             {
-                end = new DateTime((end.Value.Ticks / TimeSpan.FromSeconds(5).Ticks) * TimeSpan.FromSeconds(5).Ticks);
+                end = new DateTime((end.Value.Ticks / TimeSpan.FromSeconds((int)granularity).Ticks) * TimeSpan.FromSeconds((int)granularity).Ticks);
                 start = end - (interval * count);
             }
             if (candleFormat == "bidask")
@@ -205,7 +207,7 @@ namespace TradeApp.FakeOandaSrver
                 {
                     instrument = instrument,
                     granularity = granularity.ToString(),
-                    candles = CreateCandles(inst, interval, count, start, end, (d, open, high, low, close, volume) => new BidAskCandle()
+                    candles = CreateCandles(inst, interval, count, start, end, includeFirst, (d, open, high, low, close, volume) => new BidAskCandle()
                     {
                         Time = d,
                         OpenAsk = open.Ask,
@@ -226,7 +228,7 @@ namespace TradeApp.FakeOandaSrver
                 {
                     instrument = instrument,
                     granularity = granularity.ToString(),
-                    candles = CreateCandles(inst, interval, count, start, end, (d, open, high, low, close, volume) => new MidpointCandle()
+                    candles = CreateCandles(inst, interval, count, start, end, includeFirst, (d, open, high, low, close, volume) => new MidpointCandle()
                     {
                         Time = d,
                         OpenMid = (open.Ask + open.Bid) / 2,
@@ -240,11 +242,11 @@ namespace TradeApp.FakeOandaSrver
 
         }
 
-        private static T[] CreateCandles<T>(FakeOandaContext.FakeOandaInstrument inst, TimeSpan interval, int count, DateTime? start, DateTime? end, Func<DateTime, FakeOandaContext.FakeOandaPrice, FakeOandaContext.FakeOandaPrice, FakeOandaContext.FakeOandaPrice, FakeOandaContext.FakeOandaPrice, int, T> factory)
+        private static T[] CreateCandles<T>(FakeOandaContext.FakeOandaInstrument inst, TimeSpan interval, int count, DateTime? start, DateTime? end, bool includeFirst, Func<DateTime, FakeOandaContext.FakeOandaPrice, FakeOandaContext.FakeOandaPrice, FakeOandaContext.FakeOandaPrice, FakeOandaContext.FakeOandaPrice, int, T> factory)
         {
             var i = 0;
             var result = new T[count];
-            for (var d = start.Value; d < end.Value; d += interval)
+            for (var d = includeFirst ? start.Value : start.Value + interval; d <= end.Value; d += interval)
             {
                 var open = inst.CurrentPrice(d);
                 var close = inst.CurrentPrice(d + interval);

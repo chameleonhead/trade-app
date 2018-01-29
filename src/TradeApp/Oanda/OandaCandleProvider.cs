@@ -15,16 +15,16 @@ namespace TradeApp.Oanda
             this.apiEndpoint = new OandaApi(new Uri(server), token);
         }
 
-        public override Candle[] GetCandles(TradingSymbol symbol, DateTime from, DateTime to, TimeSpan span)
+        public override Candle[] GetCandles(TradingSymbol symbol, DateTime from, DateTime to, ChartRange range)
         {
-            var granularity = ConvertGranurality(span);
-            var task = apiEndpoint.GetBidAskCandles(symbol.Symbol, start: from, end: to, includeFirst: true);
+            var granularity = ConvertGranurality(range);
+            var task = apiEndpoint.GetBidAskCandles(symbol.Symbol, granularity: granularity, start: from, end: to, includeFirst: true);
             return task.Result.Select(oandaCandle => new Candle(oandaCandle.Time, oandaCandle.OpenAsk, oandaCandle.HighAsk, oandaCandle.LowAsk, oandaCandle.CloseAsk, oandaCandle.Volume)).ToArray();
         }
 
-        private Granularity ConvertGranurality(TimeSpan span)
+        private Granularity ConvertGranurality(ChartRange range)
         {
-            return (Granularity)(int)span.TotalSeconds;
+            return (Granularity)(int)range;
         }
     }
 }
