@@ -21,4 +21,16 @@ namespace TradeApp.Charting
         public decimal Close { get; }
         public int Volume { get; }
     }
+
+    public class SingleValue
+    {
+        public SingleValue(DateTime time, decimal value)
+        {
+            Time = time;
+            Value = value;
+        }
+
+        public DateTime Time { get; }
+        public decimal Value { get; }
+    }
 }

@@ -2,7 +2,7 @@
 
 namespace TradeApp.Charting.Indicators
 {
-    public class SmaIndicator : IIndicator<decimal, decimal>
+    public class SmaIndicator : IIndicator<SingleValue, SingleValue>
     {
         private Queue<decimal> samples;
         private decimal total;
@@ -14,20 +14,18 @@ namespace TradeApp.Charting.Indicators
             this.period = period;
         }
 
-        public decimal Last => total / period;
-
-        public decimal Next(decimal data)
+        public SingleValue Next(SingleValue data)
         {
-            total += data;
-            samples.Enqueue(data);
+            total += data.Value;
+            samples.Enqueue(data.Value);
 
             if (samples.Count <= period)
             {
-                return total / samples.Count;
+                return new SingleValue(data.Time, total / samples.Count);
             }
 
             total -= samples.Dequeue();
-            return Last;
+            return new SingleValue(data.Time, total / period);
         }
     }
 }

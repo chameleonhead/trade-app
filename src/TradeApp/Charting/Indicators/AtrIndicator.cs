@@ -3,10 +3,10 @@ using System.Linq;
 
 namespace TradeApp.Charting.Indicators
 {
-    public class AtrIndicator : IIndicator<Candle, decimal?>
+    public class AtrIndicator : IIndicator<Candle, SingleValue>
     {
         private Candle previous;
-        private decimal? averageTrueRange;
+        private decimal averageTrueRange;
         private int period;
         private SmaIndicator smaIndicator;
         private int currentIndex;
@@ -17,9 +17,7 @@ namespace TradeApp.Charting.Indicators
             this.smaIndicator = new SmaIndicator(period);
         }
 
-        public decimal? Last => averageTrueRange;
-
-        public decimal? Next(Candle data)
+        public SingleValue Next(Candle data)
         {
             currentIndex++;
             var trueRange = previous == null
@@ -33,12 +31,12 @@ namespace TradeApp.Charting.Indicators
 
             if (currentIndex <= period)
             {
-                averageTrueRange = smaIndicator.Next(trueRange);
+                averageTrueRange = smaIndicator.Next(new SingleValue(data.Time, trueRange)).Value;
                 return null;
             }
 
             averageTrueRange = (averageTrueRange * (period - 1) + trueRange) / period;
-            return Last;
+            return new SingleValue(data.Time, averageTrueRange);
         }
     }
 }
