@@ -96,14 +96,30 @@ namespace TradeApp.FakeOandaSrver
 
         private async Task InvokeOrders(HttpContext context, int accountId)
         {
-            var maxId = ParseQuery<int?>("maxId");
-            var count = ParseQuery<int?>("count") ?? 50;
-            var instrument = ParseQuery<string>("instrument");
-            var ids = ParseQuery<int[]>("ids");
+            var maxId = ParseQuery<int?>(context.Request.Query["maxId"]);
+            var count = ParseQuery<int?>(context.Request.Query["count"]) ?? 50;
+            var instrument = ParseQuery<string>(context.Request.Query["instrument"]);
+            var ids = ParseQuery<int[]>(context.Request.Query["ids"]) ?? new int[0];
+
+            var orders = _context.Accounts[accountId].Orders as IEnumerable<FakeOandaContext.FakeOandaOrder>;
+
+            if (ids.Length > 0)
+            {
+                orders = orders.Where(o => ids.Contains(o.Id));
+            }
+            else
+            {
+                if (maxId != null)
+                    orders = orders.Where(o => o.Id <= maxId.Value);
+                if (!string.IsNullOrEmpty(instrument))
+                    orders = orders.Where(o => o.Instrument == instrument);
+            }
+
+            orders = orders.OrderBy(o => o.Id).Take(count);
 
             await context.Response.WriteAsync(JsonConvert.SerializeObject(new
             {
-                orders = _context.Accounts[accountId].Orders
+                orders = orders
                     .Select(order => new
                     {
                         id = order.Id,
@@ -320,7 +336,7 @@ namespace TradeApp.FakeOandaSrver
                 }
                 if (type == typeof(int?))
                 {
-                    return int.TryParse(s, out var i) ? (T)(object)i : default(T);
+                    return (T)(object)int.Parse(s);
                 }
                 if (type == typeof(bool?))
                 {
@@ -329,6 +345,10 @@ namespace TradeApp.FakeOandaSrver
                 if (type == typeof(DateTime?))
                 {
                     return (T)(object)XmlConvert.ToDateTime(s, XmlDateTimeSerializationMode.Utc);
+                }
+                if (type == typeof(int[]))
+                {
+                    return (T)(object)s.Split(",").Select(str => int.Parse(str)).ToArray();
                 }
             }
             catch (Exception)

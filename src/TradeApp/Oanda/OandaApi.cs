@@ -184,16 +184,14 @@ namespace TradeApp.Oanda
             }
 
             var query = new StringBuilder();
-            query.Append($"/v1/accounts/{accountId}/orders");
-
             if (maxId != null)
-                query.Append($"&maxId={maxId.Value.ToString()}");
+                query.Append($"maxId={maxId.Value.ToString()}");
             if (count != 50)
-                query.Append($"&count={count}");
+                query.Append(query.Length > 0 ? "&" : "").Append($"count={count}");
             if (!string.IsNullOrEmpty(instrument))
-                query.Append($"&instrument={instrument}");
+                query.Append(query.Length > 0 ? "&" : "").Append($"instrument={instrument}");
 
-            return (await GetResponse<OrdersResponse>(query.ToString())).Orders;
+            return (await GetResponse<OrdersResponse>($"/v1/accounts/{accountId}/orders?{query.ToString()}")).Orders;
         }
 
         private int RequireAccountId()

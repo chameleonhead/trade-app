@@ -16,6 +16,11 @@ namespace TradeApp.Oanda
         {
             _server = new FakeOandaTestServer();
             _client = _server.CreateClient();
+            var context = _server.Context;
+            context.CreateMarketOrder(_server.DefaultAccountId, "USD_JPY", 1, FakeOandaContext.FakeOandaSide.buy);
+            context.CreateMarketOrder(_server.DefaultAccountId, "EUR_USD", 2, FakeOandaContext.FakeOandaSide.buy);
+            context.CreateMarketOrder(_server.DefaultAccountId, "USD_JPY", 3, FakeOandaContext.FakeOandaSide.buy);
+            context.CreateMarketOrder(_server.DefaultAccountId, "EUR_USD", 4, FakeOandaContext.FakeOandaSide.buy);
         }
 
         [TestCleanup]
@@ -25,14 +30,11 @@ namespace TradeApp.Oanda
         }
 
         [TestMethod]
-        public void 特定の口座における注文を取得する()
+        public void 特定IDを指定して注文を取得する()
         {
-            var instrument = "USD_JPY";
-            var units = 500;
-            var side = FakeOandaContext.FakeOandaSide.buy;
-            var expected = _server.Context.CreateMarketOrder(_server.DefaultAccountId, instrument, units, side);
+            var expected = _server.Context.DefaultAccount.Orders.Skip(1).First();
             var oandaApi = new OandaApi(_client, _server.DefaultAccountId);
-            var actual = oandaApi.GetOrders().Result.Single();
+            var actual = oandaApi.GetOrder(expected.Id).Result;
 
             Assert.AreEqual(expected.Id, actual.Id);
             Assert.AreEqual(expected.Instrument, actual.Instrument);
@@ -47,6 +49,45 @@ namespace TradeApp.Oanda
             Assert.AreEqual(expected.UpperBound, actual.UpperBound);
             Assert.AreEqual(expected.LowerBound, actual.LowerBound);
             Assert.AreEqual(expected.TrailingStop, actual.TrailingStop);
+        }
+
+        [TestMethod]
+        public void 複数のIDを指定して注文を取得する()
+        {
+            var expectedOrders = _server.Context.DefaultAccount.Orders.Take(2);
+            var oandaApi = new OandaApi(_client, _server.DefaultAccountId);
+            var actualOrders = oandaApi.GetOrders(expectedOrders.Select(o => o.Id).ToArray()).Result;
+
+            CollectionAssert.AreEqual(expectedOrders.Select(o => o.Id).ToArray(),
+                actualOrders.Select(o => o.Id).ToArray());
+        }
+
+        [TestMethod]
+        public void 最大のIDを指定して注文を取得する()
+        {
+            var maxId = _server.Context.DefaultAccount.Orders.OrderBy(o => o.Id).Skip(2).First().Id;
+            var oandaApi = new OandaApi(_client, _server.DefaultAccountId);
+            var actualOrders = oandaApi.GetOrders(maxId: maxId).Result;
+
+            Assert.AreEqual(3, actualOrders.Length);
+        }
+
+        [TestMethod]
+        public void 最大の取得件数を指定して注文を取得する()
+        {
+            var oandaApi = new OandaApi(_client, _server.DefaultAccountId);
+            var actualOrders = oandaApi.GetOrders(count: 2).Result;
+
+            Assert.AreEqual(2, actualOrders.Length);
+        }
+
+        [TestMethod]
+        public void 通貨ペアを指定して注文を取得する()
+        {
+            var oandaApi = new OandaApi(_client, _server.DefaultAccountId);
+            var actualOrders = oandaApi.GetOrders(instrument: "USD_JPY").Result;
+
+            Assert.AreEqual(2, actualOrders.Length);
         }
     }
 }
