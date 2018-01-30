@@ -6,7 +6,7 @@ using TradeApp.FakeOandaSrver;
 namespace TradeApp.Oanda
 {
     [TestClass]
-    public class OandaApiTest_Prices
+    public class OandaApiTest_GetPrices
     {
         private FakeOandaTestServer _server;
         private HttpClient _client;
