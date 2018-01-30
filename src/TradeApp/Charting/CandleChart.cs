@@ -12,20 +12,22 @@ namespace TradeApp.Charting
 
         private class IndicatorPlot<T> : IIndicatorPlot
         {
+            private List<T> plots = new List<T>();
             public IndicatorPlot(IChartIndicator<T> indicator)
             {
                 Indicator = indicator;
-                Plots = new List<T>();
+                Plots = plots.ToArray();
             }
 
             public IChartIndicator<T> Indicator { get; }
-            public List<T> Plots { get; }
+            public T[] Plots { get; private set; }
             public void AddCandle(Candle candle)
             {
                 var nextVal = Indicator.Next(candle);
                 if (nextVal != null)
                 {
-                    Plots.Add(nextVal);
+                    plots.Add(nextVal);
+                    Plots = plots.ToArray();
                 }
             }
         }
@@ -70,7 +72,7 @@ namespace TradeApp.Charting
             indicators.Add(name, new IndicatorPlot<T>(indicator));
         }
 
-        public IReadOnlyList<T> Plot<T>(string name)
+        public T[] Plot<T>(string name)
         {
             if (indicators.TryGetValue(name, out var value))
             {
