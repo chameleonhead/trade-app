@@ -34,7 +34,7 @@ namespace TradeApp.Drivers
         {
             if (!httpRequestListener.Process(context =>
             {
-                Assert.IsTrue(context.Request.Path.StartsWithSegments(PathString.FromUriComponent($"/v1/account/{accountId}")));
+                Assert.IsTrue(context.Request.Path.StartsWithSegments(PathString.FromUriComponent($"/v1/accounts/{accountId}")));
             }))
             {
                 Assert.Fail("時間内に口座残高照会のリクエストが来ていない");

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using TradeApp.Oanda;
@@ -25,13 +26,25 @@ namespace TradeApp.FakeOandaSrver
         public async Task Invoke(HttpContext context)
         {
             var request = context.Request;
-            if (request.Path.StartsWithSegments("/v1/accounts"))
+            if (request.Path.StartsWithSegments("/v1/accounts", out var remaining))
             {
-                await InvokeAccounts(context);
-            }
-            else if (request.Path.StartsWithSegments("/v1/account"))
-            {
-                await InvokeAccount(context);
+                var match = Regex.Match(remaining, @"^/?(\d+)");
+                if (match.Success)
+                {
+                    var accountId = int.Parse(match.Groups[1].Value);
+                    if (remaining.StartsWithSegments($"/{accountId}/orders"))
+                    {
+                        await InvokeOrders(context, accountId);
+                    }
+                    else
+                    {
+                        await InvokeAccount(context, accountId);
+                    }
+                }
+                else
+                {
+                    await InvokeAccounts(context);
+                }
             }
             else if (request.Path.StartsWithSegments("/v1/instruments"))
             {
@@ -60,14 +73,8 @@ namespace TradeApp.FakeOandaSrver
             }));
         }
 
-        private async Task InvokeAccount(HttpContext context)
+        private async Task InvokeAccount(HttpContext context, int accountId)
         {
-            if (!int.TryParse(context.Request.Path.Value.Remove(0, "/v1/account/".Length), out var accountId))
-            {
-                await _next.Invoke(context);
-                return;
-            }
-
             var account = _context.Accounts.Find(accountId);
 
             context.Response.StatusCode = (int)HttpStatusCode.OK;
@@ -84,6 +91,35 @@ namespace TradeApp.FakeOandaSrver
                 OpenOrders = account.OpenOrders,
                 MarginRate = account.MarginRate,
                 AccountCurrency = account.AccountCurrency,
+            }));
+        }
+
+        private async Task InvokeOrders(HttpContext context, int accountId)
+        {
+            var maxId = ParseQuery<int?>("maxId");
+            var count = ParseQuery<int?>("count") ?? 50;
+            var instrument = ParseQuery<string>("instrument");
+            var ids = ParseQuery<int[]>("ids");
+
+            await context.Response.WriteAsync(JsonConvert.SerializeObject(new
+            {
+                orders = _context.Accounts[accountId].Orders
+                    .Select(order => new
+                    {
+                        id = order.Id,
+                        instrument = order.Instrument,
+                        units = order.Units,
+                        side = order.Side.ToString(),
+                        type = order.Type.ToString(),
+                        time = order.Time,
+                        price = order.Price,
+                        takeProfit = order.TakeProfit,
+                        stopLoss = order.StopLoss,
+                        expiry = order.Expiry,
+                        upperBound = order.UpperBound,
+                        lowerBound = order.LowerBound,
+                        trailingStop = order.TrailingStop,
+                    }).ToArray()
             }));
         }
 

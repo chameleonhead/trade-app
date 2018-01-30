@@ -247,4 +247,26 @@ namespace TradeApp.Oanda
         public int Volume { get; set; }
         public DateTime? Complete { get; set; }
     }
+
+    /// <summary>
+    /// 特定の口座における注文を取得する
+    /// GET /v1/accounts/:account_id/orders
+    /// </summary>
+    public class Order
+    {
+        public int Id { get; set; }
+        public string Instrument { get; set; }
+        public int Units { get; set; }
+        public string Side { get; set; }
+        public string Type { get; set; }
+        public DateTime Time { get; set; }
+        public decimal? Price { get; set; }
+        public decimal? TakeProfit { get; set; }
+        public decimal? StopLoss { get; set; }
+        public DateTime? Expiry { get; set; }
+        public decimal? UpperBound { get; set; }
+        public decimal? LowerBound { get; set; }
+        public decimal? TrailingStop { get; set; }
+    }
+
 }

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -31,6 +32,11 @@ namespace TradeApp.Oanda
             public string Instrument { get; set; }
             public string Granularity { get; set; }
             public T[] Candles { get; set; }
+        }
+
+        private class OrdersResponse
+        {
+            public Order[] Orders { get; set; }
         }
 
         HttpClient client;
@@ -147,7 +153,47 @@ namespace TradeApp.Oanda
         public async Task<AccountDetail> GetAccount()
         {
             var accountId = RequireAccountId();
-            return await GetResponse<AccountDetail>($"/v1/account/{accountId}");
+            return await GetResponse<AccountDetail>($"/v1/accounts/{accountId}");
+        }
+
+        public async Task<Order> GetOrder(int id)
+        {
+            var accountId = RequireAccountId();
+            return (await GetResponse<OrdersResponse>($"/v1/accounts/{accountId}/orders?ids={id}")).Orders.FirstOrDefault();
+        }
+
+        public async Task<Order[]> GetOrders(params int[] ids)
+        {
+            var accountId = RequireAccountId();
+            if (ids.Length == 0)
+            {
+                throw new InvalidOperationException("must specify one ore more ids.");
+            }
+            return (await GetResponse<OrdersResponse>($"/v1/accounts/{accountId}/orders?ids={Uri.EscapeDataString(string.Join(",", ids))}")).Orders;
+        }
+
+        public async Task<Order[]> GetOrders(
+            int? maxId = null,
+            int count = 50,
+            string instrument = null)
+        {
+            var accountId = RequireAccountId();
+            if (count > 500)
+            {
+                throw new ArgumentException("count can't be more than 500.");
+            }
+
+            var query = new StringBuilder();
+            query.Append($"/v1/accounts/{accountId}/orders");
+
+            if (maxId != null)
+                query.Append($"&maxId={maxId.Value.ToString()}");
+            if (count != 50)
+                query.Append($"&count={count}");
+            if (!string.IsNullOrEmpty(instrument))
+                query.Append($"&instrument={instrument}");
+
+            return (await GetResponse<OrdersResponse>(query.ToString())).Orders;
         }
 
         private int RequireAccountId()
