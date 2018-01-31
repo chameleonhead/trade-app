@@ -69,7 +69,12 @@ namespace TradeApp.Charting
 
         public void AddIndicator<T>(string name, IChartIndicator<T> indicator)
         {
-            indicators.Add(name, new IndicatorPlot<T>(indicator));
+            var indicatorPlot = new IndicatorPlot<T>(indicator);
+            foreach (var candle in store.Candles)
+            {
+                indicatorPlot.AddCandle(candle);
+            }
+            indicators.Add(name, indicatorPlot);
         }
 
         public T[] Plot<T>(string name)

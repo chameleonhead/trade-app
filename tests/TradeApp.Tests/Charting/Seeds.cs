@@ -2,10 +2,10 @@
 
 namespace TradeApp.Charting
 {
-    public static class ChartingSeedData
+    static class Seeds
     {
         private static DateTime date = DateTime.Now;
-        public static Tuple<Candle[], SingleValue[]> ATR_CANDLES = Tuple.Create(
+        public static Tuple<Candle[], SingleValue[]> ATR14_CANDLES = Tuple.Create(
             new[]
             {
                 new Candle(date.AddDays(0),  0, 48.70m, 47.79m, 48.16m, 0),

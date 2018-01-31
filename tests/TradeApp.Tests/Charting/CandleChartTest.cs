@@ -25,10 +25,10 @@ namespace TradeApp.Charting
             var symbol = new TradingSymbol("USD_JPY");
             var chart = new CandleChart(symbol, ChartRange.Hourly, new MockCandleStore());
             chart.AddIndicator("ATR14", new AtrIndicator(14));
-            chart.AddCandles(ChartingSeedData.ATR_CANDLES.Item1);
+            chart.AddCandles(Seeds.ATR14_CANDLES.Item1);
             var values = chart.Plot<SingleValue>("ATR14");
             var i = 0;
-            foreach (var val in ChartingSeedData.ATR_CANDLES.Item2)
+            foreach (var val in Seeds.ATR14_CANDLES.Item2)
             {
                 if (val != null)
                 {
@@ -37,6 +37,26 @@ namespace TradeApp.Charting
                     Assert.AreEqual(val.Value, Math.Round(plot.Value, 4));
                 }
             }
+        }
+
+        [TestMethod]
+        public void データ登録済みのストアを指定してチャートを生成しインジケータを追加しインジケータが計算済みであること()
+        {
+            var date = DateTime.Now;
+            var symbol = new TradingSymbol("USD_JPY");
+            var store = new MockCandleStore();
+
+            foreach (var candle in Seeds.ATR14_CANDLES.Item1)
+            {
+                store.AddCandle(candle);
+            }
+
+            var chart = new CandleChart(symbol, ChartRange.Hourly, store);
+            chart.AddIndicator("ATR14", new AtrIndicator(14));
+            CollectionAssert.AreEqual(
+                Seeds.ATR14_CANDLES.Item2.Where(sv => sv != null).Select(sv => sv.Value).ToArray(),
+                chart.Plot<SingleValue>("ATR14").Select(sv => Math.Round(sv.Value, 4)).ToArray()
+            );
         }
     }
 }

@@ -14,7 +14,7 @@ namespace TradeApp.Charting
 
         public Candle LatestCandle { get; private set; }
 
-        public IQueryable<Candle> Candles => new EnumerableQuery<Candle>(candles);
+        public IQueryable<Candle> Candles => new EnumerableQuery<Candle>(candles).OrderBy(candle => candle.Time);
 
         public void AddCandle(Candle candle)
         {
