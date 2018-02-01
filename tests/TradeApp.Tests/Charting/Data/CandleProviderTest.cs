@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace TradeApp.Charting.Providers
+namespace TradeApp.Charting.Data
 {
     [TestClass]
     public class CandleProviderFactoryTest

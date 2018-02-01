@@ -1,7 +1,7 @@
 ﻿using System;
 using TradeApp.Oanda;
 
-namespace TradeApp.Charting.Providers
+namespace TradeApp.Charting.Data
 {
     public abstract class CandleProvider
     {
