@@ -47,7 +47,6 @@ namespace TradeApp.Charting
             this.symbol = symbol;
             this.range = range;
             this.store = store;
-            store.Initialize(symbol, range);
         }
 
         public void AddCandle(Candle candle)

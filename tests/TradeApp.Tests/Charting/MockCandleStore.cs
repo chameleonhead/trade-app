@@ -21,9 +21,5 @@ namespace TradeApp.Charting
             LatestCandle = candle;
             candles.Add(candle);
         }
-
-        public void Initialize(TradingSymbol symbol, ChartRange hourly)
-        {
-        }
     }
 }

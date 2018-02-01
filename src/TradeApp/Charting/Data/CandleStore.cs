@@ -9,15 +9,16 @@ namespace TradeApp.Charting.Data
         private CandleChartStore store;
         private ChartEntryEntity entry;
 
-        public CandleStore(CandleChartStore store)
-        {
-            this.store = store;
-        }
-
-        public void Initialize(TradingSymbol symbol, ChartRange range)
+        public CandleStore(TradingSymbol symbol, ChartRange range, CandleChartStore store)
         {
             this.symbol = symbol;
             this.range = range;
+            this.store = store;
+            initialize();
+        }
+
+        private void initialize()
+        {
             entry = store.ChartEntries.Where(ce => ce.Symbol == symbol.Symbol && ce.Range == range).FirstOrDefault();
             if (entry == null)
             {
