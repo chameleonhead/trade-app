@@ -2,30 +2,45 @@
 
 namespace TradeApp.Charting.Indicators
 {
-    public class SmaIndicator : IIndicator<decimal, decimal>
+    public class SmaIndicator : IChartIndicator<SingleValue>
     {
-        private Queue<decimal> samples;
-        private decimal total;
-        private int period;
+        public class SmaImpl : IIndicator<decimal, decimal>
+        {
+            private Queue<decimal> samples;
+            private decimal total;
+            private int period;
+
+            public SmaImpl(int period)
+            {
+                this.samples = new Queue<decimal>();
+                this.period = period;
+            }
+
+            public decimal Next(decimal data)
+            {
+                total += data;
+                samples.Enqueue(data);
+
+                if (samples.Count <= period)
+                {
+                    return total / samples.Count;
+                }
+
+                total -= samples.Dequeue();
+                return total / period;
+            }
+        }
+
+        private SmaImpl _decimalIndicator;
 
         public SmaIndicator(int period)
         {
-            this.samples = new Queue<decimal>();
-            this.period = period;
+            _decimalIndicator = new SmaImpl(period);
         }
 
-        public decimal Next(decimal data)
+        public SingleValue Next(Candle data)
         {
-            total += data;
-            samples.Enqueue(data);
-
-            if (samples.Count <= period)
-            {
-                return total / samples.Count;
-            }
-
-            total -= samples.Dequeue();
-            return total / period;
+            return new SingleValue(data.Time, _decimalIndicator.Next(data.Close));
         }
     }
 }

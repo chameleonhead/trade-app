@@ -8,13 +8,13 @@ namespace TradeApp.Charting.Indicators
         private Candle previous;
         private decimal averageTrueRange;
         private int period;
-        private SmaIndicator smaIndicator;
+        private SmaIndicator.SmaImpl smaIndicator;
         private int currentIndex;
 
         public AtrIndicator(int period)
         {
             this.period = period;
-            this.smaIndicator = new SmaIndicator(period);
+            this.smaIndicator = new SmaIndicator.SmaImpl(period);
         }
 
         public SingleValue Next(Candle data)
