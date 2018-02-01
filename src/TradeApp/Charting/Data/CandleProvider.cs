@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TradeApp.Oanda;
 
 namespace TradeApp.Charting.Data
@@ -10,10 +11,36 @@ namespace TradeApp.Charting.Data
 
     public static class CandleProviderFactory
     {
+        private static Dictionary<string, Func<string, OandaCandleProvider>> factories = new Dictionary<string, Func<string, OandaCandleProvider>>();
+
+        static CandleProviderFactory()
+        {
+            Register("OANDA", OandaCandleProviderFactory.GetInstance);
+        }
+
+        public static void Register(string providerName, Func<string, OandaCandleProvider> factory)
+        {
+            factories.Add(providerName, factory);
+        }
 
         public static CandleProvider GetInstance(string connectionString)
         {
-            return OandaCandleProviderFactory.GetInstance(connectionString);
+            var providerName = default(string);
+            if (connectionString.IndexOf(";") < 0)
+            {
+                providerName = connectionString;
+            }
+            else
+            {
+                providerName = connectionString.Substring(0, connectionString.IndexOf(";"));
+            }
+
+            if (factories.TryGetValue(providerName, out var factory))
+            {
+                return factory.Invoke(connectionString);
+            }
+
+            throw new ArgumentException($"provider name {providerName} is not registered.");
         }
 
         class OandaCandleProviderFactory
@@ -23,7 +50,7 @@ namespace TradeApp.Charting.Data
                 string server = null;
                 string token = null;
 
-                foreach (var item in connectionString.Split(";"))
+                foreach (var item in connectionString.Substring("OANDA;".Length).Split(";"))
                 {
                     var propVal = item.Split("=");
                     if (propVal.Length != 2)
