@@ -12,7 +12,7 @@ namespace TradeApp.Charting
 
         private class IndicatorPlot<T> : IIndicatorPlot
         {
-            private List<T> plots = new List<T>();
+            private Queue<T> plots = new Queue<T>();
             public IndicatorPlot(IChartIndicator<T> indicator)
             {
                 Indicator = indicator;
@@ -26,7 +26,11 @@ namespace TradeApp.Charting
                 var nextVal = Indicator.Next(candle);
                 if (nextVal != null)
                 {
-                    plots.Add(nextVal);
+                    plots.Enqueue(nextVal);
+                    if (plots.Count > 100)
+                    {
+                        plots.Dequeue();
+                    }
                     Plots = plots.ToArray();
                 }
             }

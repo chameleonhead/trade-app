@@ -58,5 +58,27 @@ namespace TradeApp.Charting
                 chart.Plot<SingleValue>("ATR14").Select(sv => Math.Round(sv.Value, 4)).ToArray()
             );
         }
+
+        [TestMethod]
+        public void チャートに保持するインジケータの計算結果が最大100件までとなる()
+        {
+            var date = DateTime.Now;
+            var symbol = new TradingSymbol("USD_JPY");
+            var store = new MockCandleStore();
+
+            var chart = new CandleChart(symbol, ChartRange.Hourly, store);
+            chart.AddIndicator("SMA5", new SmaIndicator(5));
+
+            Enumerable.Range(1, 100).ToList()
+                .ForEach(i =>
+                {
+                    chart.AddCandle(new Candle(date.AddDays(i), i, i, i, i, i));
+                    Assert.AreEqual(i, chart.Plot<SingleValue>("SMA5").Length);
+                });
+
+            chart.AddCandle(new Candle(date.AddDays(101), 101, 101, 101, 101, 101));
+            Assert.AreEqual(100, chart.Plot<SingleValue>("SMA5").Length);
+        }
+
     }
 }
