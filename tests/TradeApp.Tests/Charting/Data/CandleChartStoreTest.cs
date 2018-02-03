@@ -12,6 +12,7 @@ namespace TradeApp.Charting.Data
         {
             using (var context = new CandleChartStore())
             {
+                context.Database.EnsureDeleted();
                 CandleStoreInitializer.Initialize(context);
             }
         }

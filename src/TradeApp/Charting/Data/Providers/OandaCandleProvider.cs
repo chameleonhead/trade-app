@@ -1,22 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using TradeApp.Charting;
-using TradeApp.Charting.Data;
+using TradeApp.Oanda;
 
-namespace TradeApp.Oanda
+namespace TradeApp.Charting.Data.Providers
 {
     public class OandaCandleProvider : CandleProvider
     {
         private OandaApi apiEndpoint;
-        private Dictionary<TradingSymbol, IEnumerable<Candle>> dictionay = new Dictionary<TradingSymbol, IEnumerable<Candle>>();
 
-        public OandaCandleProvider(string server, string token)
+        public OandaCandleProvider(OandaApi apiEndpoint)
         {
-            this.apiEndpoint = new OandaApi(new Uri(server), token);
+            this.apiEndpoint = apiEndpoint;
         }
 
-        public override Candle[] GetCandles(TradingSymbol symbol, DateTime from, DateTime to, ChartRange range)
+        public override Candle[] GetCandles(TradingSymbol symbol, ChartRange range, DateTime from, DateTime to)
         {
             var granularity = ConvertGranurality(range);
             var task = apiEndpoint.GetBidAskCandles(symbol.Symbol, granularity: granularity, start: from, end: to, includeFirst: true);

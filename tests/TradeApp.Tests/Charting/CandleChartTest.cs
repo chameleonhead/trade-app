@@ -13,20 +13,23 @@ namespace TradeApp.Charting
         {
             var date = DateTime.Now;
             var symbol = new TradingSymbol("USD_JPY");
-            var store = new MockCandleStore();
-            var chart = new CandleChart(symbol, ChartRange.Hourly, store);
+            var chart = new CandleChart(symbol, ChartRange.Hourly);
             chart.AddCandle(new Candle(date, 0, 48.70m, 47.79m, 48.16m, 0));
-            Assert.AreEqual(date, store.Candles.First().Time);
+
+            var snapshot = chart.Snapshot;
+            Assert.AreEqual(date, snapshot.Candles.First().Time);
         }
 
         [TestMethod]
         public void チャートにATRを設定しキャンドルを読み込むと自動的にATRが計算される()
         {
             var symbol = new TradingSymbol("USD_JPY");
-            var chart = new CandleChart(symbol, ChartRange.Hourly, new MockCandleStore());
+            var chart = new CandleChart(symbol, ChartRange.Hourly);
             chart.AddIndicator("ATR14", new AtrIndicator(14));
             chart.AddCandles(Seeds.ATR14_CANDLES.Item1);
-            var values = chart.Plot<SingleValue>("ATR14");
+
+            var snapshot = chart.Snapshot;
+            var values = snapshot.Plot<SingleValue>("ATR14");
             var i = 0;
             foreach (var val in Seeds.ATR14_CANDLES.Item2)
             {
@@ -44,18 +47,14 @@ namespace TradeApp.Charting
         {
             var date = DateTime.Now;
             var symbol = new TradingSymbol("USD_JPY");
-            var store = new MockCandleStore();
 
-            foreach (var candle in Seeds.ATR14_CANDLES.Item1)
-            {
-                store.AddCandle(candle);
-            }
-
-            var chart = new CandleChart(symbol, ChartRange.Hourly, store);
+            var chart = new CandleChart(symbol, ChartRange.Hourly, Seeds.ATR14_CANDLES.Item1);
             chart.AddIndicator("ATR14", new AtrIndicator(14));
+
+            var snapshot = chart.Snapshot;
             CollectionAssert.AreEqual(
                 Seeds.ATR14_CANDLES.Item2.Where(sv => sv != null).Select(sv => sv.Value).ToArray(),
-                chart.Plot<SingleValue>("ATR14").Select(sv => Math.Round(sv.Value, 4)).ToArray()
+                snapshot.Plot<SingleValue>("ATR14").Select(sv => Math.Round(sv.Value, 4)).ToArray()
             );
         }
 
@@ -64,20 +63,22 @@ namespace TradeApp.Charting
         {
             var date = DateTime.Now;
             var symbol = new TradingSymbol("USD_JPY");
-            var store = new MockCandleStore();
 
-            var chart = new CandleChart(symbol, ChartRange.Hourly, store);
+            var chart = new CandleChart(symbol, ChartRange.Hourly);
             chart.AddIndicator("SMA5", new SmaIndicator(5));
 
             Enumerable.Range(1, 100).ToList()
                 .ForEach(i =>
                 {
                     chart.AddCandle(new Candle(date.AddDays(i), i, i, i, i, i));
-                    Assert.AreEqual(i, chart.Plot<SingleValue>("SMA5").Length);
+                    var snapshot1 = chart.Snapshot;
+                    Assert.AreEqual(i, snapshot1.Plot<SingleValue>("SMA5").Length);
                 });
 
             chart.AddCandle(new Candle(date.AddDays(101), 101, 101, 101, 101, 101));
-            Assert.AreEqual(100, chart.Plot<SingleValue>("SMA5").Length);
+            var snapshot2 = chart.Snapshot;
+            Assert.AreEqual(100, snapshot2.Candles.Length);
+            Assert.AreEqual(100, snapshot2.Plot<SingleValue>("SMA5").Length);
         }
 
     }

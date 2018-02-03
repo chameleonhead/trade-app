@@ -1,26 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TradeApp.Charting
 {
+    public class CandleChartSnapshot
+    {
+        private Dictionary<string, IPlotType[]> plots = new Dictionary<string, IPlotType[]>();
+
+        public CandleChartSnapshot(Candle[] candles, Dictionary<string, IPlotType[]> plots)
+        {
+            this.Candles = candles;
+            this.plots = plots;
+        }
+
+        public Candle[] Candles { get; }
+        public T[] Plot<T>(string name)
+            where T : IPlotType
+        {
+            if (plots.TryGetValue(name, out var value))
+            {
+                return value.Cast<T>().ToArray();
+            }
+
+            throw new InvalidOperationException();
+        }
+    }
+
     public class CandleChart
     {
         private interface IIndicatorPlot
         {
             void AddCandle(Candle candle);
+            IPlotType[] Plot { get; }
         }
 
-        private class IndicatorPlot<T> : IIndicatorPlot
+        private class IndicatorPlot : IIndicatorPlot
         {
-            private Queue<T> plots = new Queue<T>();
-            public IndicatorPlot(IChartIndicator<T> indicator)
+            private Queue<IPlotType> plots = new Queue<IPlotType>();
+
+            public IndicatorPlot(IChartIndicator<IPlotType> indicator)
             {
                 Indicator = indicator;
-                Plots = plots.ToArray();
+                Plot = plots.ToArray();
             }
 
-            public IChartIndicator<T> Indicator { get; }
-            public T[] Plots { get; private set; }
+            public IChartIndicator<IPlotType> Indicator { get; }
+            public IPlotType[] Plot { get; private set; }
             public void AddCandle(Candle candle)
             {
                 var nextVal = Indicator.Next(candle);
@@ -31,35 +57,37 @@ namespace TradeApp.Charting
                     {
                         plots.Dequeue();
                     }
-                    Plots = plots.ToArray();
+                    Plot = plots.ToArray();
                 }
             }
         }
 
+        private Queue<Candle> store = new Queue<Candle>();
         private Dictionary<string, IIndicatorPlot> indicators = new Dictionary<string, IIndicatorPlot>();
         private TradingSymbol symbol;
         private ChartRange range;
+        private Candle latestCandle;
 
-        private ICandleStore store;
-
-        public CandleChart(TradingSymbol symbol, ChartRange range, ICandleStore store)
+        public CandleChart(TradingSymbol symbol, ChartRange range) : this(symbol, range, new Candle[0])
         {
+        }
+
+        public CandleChart(TradingSymbol symbol, ChartRange range, Candle[] candles)
+        {
+            foreach (var candle in candles)
+            {
+                latestCandle = candle;
+                store.Enqueue(candle);
+            }
             this.symbol = symbol;
             this.range = range;
-            this.store = store;
+            updateSnapshot();
         }
 
         public void AddCandle(Candle candle)
         {
-            if (candle.Time <= store.LatestCandle?.Time)
-            {
-                throw new InvalidOperationException($"{nameof(candle)} should be after last inserted candle.");
-            }
-            store.AddCandle(candle);
-            foreach (var indicatorPlot in indicators.Values)
-            {
-                indicatorPlot.AddCandle(candle);
-            }
+            addCandle(candle);
+            updateSnapshot();
         }
 
         public void AddCandles(IEnumerable<Candle> candles)
@@ -68,26 +96,53 @@ namespace TradeApp.Charting
             {
                 AddCandle(candle);
             }
+            updateSnapshot();
         }
 
-        public void AddIndicator<T>(string name, IChartIndicator<T> indicator)
+        public void AddIndicator(string name, IChartIndicator<IPlotType> indicator)
         {
-            var indicatorPlot = new IndicatorPlot<T>(indicator);
-            foreach (var candle in store.Candles)
+            var indicatorPlot = new IndicatorPlot(indicator);
+            foreach (var candle in store.ToArray())
             {
                 indicatorPlot.AddCandle(candle);
             }
             indicators.Add(name, indicatorPlot);
+            updateSnapshot();
         }
 
-        public T[] Plot<T>(string name)
+        private void addCandle(Candle candle)
         {
-            if (indicators.TryGetValue(name, out var value))
+            if (candle.Time <= latestCandle?.Time)
             {
-                return ((IndicatorPlot<T>)value).Plots;
+                throw new InvalidOperationException($"{nameof(candle)} should be after last inserted candle.");
             }
 
-            throw new InvalidOperationException();
+            latestCandle = candle;
+            store.Enqueue(candle);
+            if (store.Count > 100)
+            {
+                store.Dequeue();
+            }
+
+            foreach (var indicatorPlot in indicators)
+            {
+                indicatorPlot.Value.AddCandle(candle);
+            }
         }
+
+        private void updateSnapshot()
+        {
+            var candles = store.ToArray();
+            var plots = new Dictionary<string, IPlotType[]>();
+
+            foreach (var indicatorPlot in indicators)
+            {
+                plots.Add(indicatorPlot.Key, indicatorPlot.Value.Plot);
+            }
+
+            Snapshot = new CandleChartSnapshot(candles, plots);
+        }
+
+        public CandleChartSnapshot Snapshot { get; private set; }
     }
 }

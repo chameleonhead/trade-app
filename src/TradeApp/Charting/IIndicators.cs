@@ -5,7 +5,10 @@
         TOut Next(TIn data);
     }
 
-    public interface IChartIndicator<T> : IIndicator<Candle, T>
+    public interface IChartIndicator { }
+
+    public interface IChartIndicator<out T> : IChartIndicator, IIndicator<Candle, T>
+        where T: IPlotType
     {
     }
 }

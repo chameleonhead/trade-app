@@ -1,9 +1,9 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using TradeApp.Charting;
 using TradeApp.FakeOandaSrver;
+using TradeApp.Oanda;
 
-namespace TradeApp.Oanda
+namespace TradeApp.Charting.Data.Providers
 {
     [TestClass]
     public class OandaCandleProviderTest
@@ -32,8 +32,9 @@ namespace TradeApp.Oanda
             var to = new DateTime(2017, 1, 1, 10, 0, 0, DateTimeKind.Utc);
             var range = ChartRange.Hourly;
 
-            var sut = new OandaCandleProvider(_server.BaseUri.ToString(), _server.DefaultAccessToken);
-            var candles = sut.GetCandles(symbol, from, to, range);
+            var oandaApi = new OandaApi(_server.BaseUri, _server.DefaultAccessToken);
+            var sut = new OandaCandleProvider(oandaApi);
+            var candles = sut.GetCandles(symbol, range, from, to);
             Assert.AreEqual(10, candles.Length);
         }
     }

@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System;
 
 namespace TradeApp.Charting.Data
 {
@@ -18,7 +20,43 @@ namespace TradeApp.Charting.Data
         }
 
         public DbSet<ChartEntryEntity> ChartEntries { get; set; }
+
+        internal bool IsCacheAvailable(ChartEntryEntity entry, DateTime from, DateTime to)
+        {
+            throw new NotImplementedException();
+        }
+
         public DbSet<CandleEntity> Candles { get; set; }
+
+        public ChartEntryEntity FindOrCreateEntry(TradingSymbol symbol, ChartRange range)
+        {
+            var entry = ChartEntries.Where(ce => ce.Symbol == symbol.Symbol && ce.Range == range).FirstOrDefault();
+            if (entry == null)
+            {
+                entry = new ChartEntryEntity()
+                {
+                    Symbol = symbol.Symbol,
+                    Range = range,
+                };
+                ChartEntries.AddAsync(entry);
+                SaveChangesAsync();
+            }
+            return entry;
+        }
+
+        public void AddCandle(Candle candle)
+        {
+            Candles.AddAsync(new CandleEntity()
+            {
+                Time = candle.Time,
+                Open = candle.Open,
+                High = candle.High,
+                Low = candle.Low,
+                Close = candle.Close,
+                Volume = candle.Volume
+            });
+            SaveChangesAsync();
+        }
     }
 
     public class CandleStoreInitializer

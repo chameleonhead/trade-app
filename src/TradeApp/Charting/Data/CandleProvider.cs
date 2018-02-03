@@ -1,78 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
-using TradeApp.Oanda;
 
 namespace TradeApp.Charting.Data
 {
     public abstract class CandleProvider
     {
-        public abstract Candle[] GetCandles(TradingSymbol symbol, DateTime from, DateTime to, ChartRange range);
+        public abstract Candle[] GetCandles(TradingSymbol symbol, ChartRange range, DateTime from, DateTime to);
     }
 
     public static class CandleProviderFactory
     {
-        private static Dictionary<string, Func<string, OandaCandleProvider>> factories = new Dictionary<string, Func<string, OandaCandleProvider>>();
+        private static Dictionary<TradingSymbol, Func<CandleProvider>> factories = new Dictionary<TradingSymbol, Func<CandleProvider>>();
 
-        static CandleProviderFactory()
+        public static void Register(TradingSymbol symbol, Func<CandleProvider> factory)
         {
-            Register("OANDA", OandaCandleProviderFactory.GetInstance);
+            factories.Add(symbol, factory);
         }
 
-        public static void Register(string providerName, Func<string, OandaCandleProvider> factory)
+        public static void Unregister(TradingSymbol symbol)
         {
-            factories.Add(providerName, factory);
+            factories.Remove(symbol);
         }
 
-        public static CandleProvider GetInstance(string connectionString)
+        public static CandleProvider GetInstance(TradingSymbol symbol)
         {
-            var providerName = default(string);
-            if (connectionString.IndexOf(";") < 0)
+            if (factories.TryGetValue(symbol, out var factory))
             {
-                providerName = connectionString;
-            }
-            else
-            {
-                providerName = connectionString.Substring(0, connectionString.IndexOf(";"));
+                return factory.Invoke();
             }
 
-            if (factories.TryGetValue(providerName, out var factory))
-            {
-                return factory.Invoke(connectionString);
-            }
-
-            throw new ArgumentException($"provider name {providerName} is not registered.");
-        }
-
-        class OandaCandleProviderFactory
-        {
-            public static OandaCandleProvider GetInstance(string connectionString)
-            {
-                string server = null;
-                string token = null;
-
-                foreach (var item in connectionString.Substring("OANDA;".Length).Split(";"))
-                {
-                    var propVal = item.Split("=");
-                    if (propVal.Length != 2)
-                    {
-                        throw new ArgumentException("invalid connection string", nameof(connectionString));
-                    }
-
-                    switch (propVal[0].ToUpperInvariant())
-                    {
-                        case "TOKEN":
-                            token = propVal[1];
-                            break;
-                        case "SERVER":
-                            server = propVal[1];
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                return new OandaCandleProvider(server, token);
-            }
+            throw new ArgumentException($"provider for {symbol.Symbol} is not registered.");
         }
     }
 }
