@@ -13,6 +13,7 @@ namespace TradeApp.Charting.Data
         {
             var symbol = new TradingSymbol("USD_JPY");
             var range = ChartRange.Daily;
+            var chart = new CandleChart(symbol, range);
             var from = new DateTime(2017, 12, 1, 0, 0, 0, DateTimeKind.Utc);
             var to = from.AddDays(10);
             var candles = Seeds.CreateRomdomCandles(from, to, range);
@@ -26,7 +27,7 @@ namespace TradeApp.Charting.Data
                 .UseInMemoryDatabase("CandleChartUpdaterTestDb")
                 .Options))
             {
-                var chartUpdater = new CandleChartUpdater(symbol, range, store, provider);
+                var chartUpdater = new CandleChartUpdater(chart, store, provider);
                 chartUpdater.Fetch(from, to);
 
                 Assert.AreEqual(11, store.Candles.Count());
@@ -38,6 +39,7 @@ namespace TradeApp.Charting.Data
         {
             var symbol = new TradingSymbol("USD_JPY");
             var range = ChartRange.Daily;
+            var chart = new CandleChart(symbol, range);
             var from = new DateTime(2017, 12, 1, 0, 0, 0, DateTimeKind.Utc);
             var to = from.AddDays(10);
             var candles = Seeds.CreateRomdomCandles(from, to, range);
@@ -54,7 +56,7 @@ namespace TradeApp.Charting.Data
                 // ストアに保存
                 var entry = store.FindOrCreateEntry(symbol, range);
                 store.AddCandles(entry, from, to, candles.ToArray());
-                var chartUpdater = new CandleChartUpdater(symbol, range, store, provider);
+                var chartUpdater = new CandleChartUpdater(chart, store, provider);
                 chartUpdater.Fetch(from, to);
 
                 Assert.IsFalse(provider.ProvidedCandles.Any());

@@ -143,6 +143,8 @@ namespace TradeApp.Charting
             Snapshot = new CandleChartSnapshot(candles, plots);
         }
 
+        public TradingSymbol Symbol => symbol;
+        public ChartRange Range => range;
         public CandleChartSnapshot Snapshot { get; private set; }
     }
 }

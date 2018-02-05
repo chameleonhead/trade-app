@@ -5,16 +5,24 @@ namespace TradeApp.Charting
 {
     public class CandleChartManager
     {
-        private Func<TradingSymbol, ChartRange, CandleProvider> candleStoreFactory;
+        private Func<TradingSymbol, ChartRange, CandleProvider> candleProviderFactory;
+        private CandleChartStore store = new CandleChartStore();
+        private DateTime currentTime;
 
-        public CandleChartManager(DateTime from, Func<TradingSymbol, ChartRange, CandleProvider> candleStoreFactory)
+        public CandleChartManager(DateTime currentTime, Func<TradingSymbol, ChartRange, CandleProvider> candleProviderFactory)
         {
-            this.candleStoreFactory = candleStoreFactory;
+            this.candleProviderFactory = candleProviderFactory;
+            this.currentTime = currentTime;
         }
 
         public CandleChart GetChart(TradingSymbol symbol, ChartRange range)
         {
-            throw new NotImplementedException();
+            var provider = candleProviderFactory(symbol, range);
+            CandleChart chart = new CandleChart(symbol, range);
+            var updater = new CandleChartUpdater(chart, store, provider);
+            var now = currentTime;
+            updater.Fetch(now - TimeSpan.FromSeconds(200 * (int)range), now);
+            return chart;
         }
 
         public void Update(DateTime to)

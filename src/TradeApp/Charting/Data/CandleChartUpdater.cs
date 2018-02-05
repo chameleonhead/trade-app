@@ -4,17 +4,15 @@ namespace TradeApp.Charting.Data
 {
     public class CandleChartUpdater
     {
-        private TradingSymbol symbol;
-        private ChartRange range;
+        private CandleChart chart;
         private CandleChartStore store;
         private CandleProvider provider;
 
         private ChartEntryEntity entry;
 
-        public CandleChartUpdater(TradingSymbol symbol, ChartRange range, CandleChartStore store, CandleProvider provider)
+        public CandleChartUpdater(CandleChart chart, CandleChartStore store, CandleProvider provider)
         {
-            this.symbol = symbol;
-            this.range = range;
+            this.chart = chart;
             this.store = store;
             this.provider = provider;
             initialize();
@@ -22,14 +20,14 @@ namespace TradeApp.Charting.Data
 
         private void initialize()
         {
-            entry = store.FindOrCreateEntry(symbol, range);
+            entry = store.FindOrCreateEntry(chart.Symbol, chart.Range);
         }
 
         public void Fetch(DateTime from, DateTime to)
         {
             if (!store.IsCacheAvailable(entry, from, to))
             {
-                var candles = provider.GetCandles(symbol, range, from, to);
+                var candles = provider.GetCandles(chart.Symbol, chart.Range, from, to);
                 store.AddCandles(entry, from, to, candles);
             }
         }
