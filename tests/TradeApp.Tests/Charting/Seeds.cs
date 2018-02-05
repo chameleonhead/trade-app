@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TradeApp.Charting
 {
@@ -72,5 +74,46 @@ namespace TradeApp.Charting
                 new SingleValue(date.AddDays(29), 1.3163m),
             }
         );
+
+        public static IEnumerable<Candle> CreateRomdomCandles(DateTime from, DateTime to, ChartRange range)
+        {
+            var intRange = (int)range;
+            var count = 0;
+            for (var d = from; d <= to; d += TimeSpan.FromSeconds(intRange))
+                count += 1;
+
+            var year2000 = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            Func<DateTime, double> func1 = d => (year2000 - d).TotalDays / 365;
+            Func<double, double> func2 = x => Math.Cos(1 / 4 * Math.PI * x) + (Math.Cos(Math.PI * x) / 4) + (Math.Cos(3 * Math.PI * x) / 10) + (Math.Cos(30 * Math.PI * x) / 16);
+
+            Func<int, DateTime> time = t => from + TimeSpan.FromSeconds(t);
+            Func<DateTime, decimal> value = t => (decimal)func2(func1(t));
+            Func<DateTime, decimal> price = t => value(t) * 20 + 40;
+            Func<DateTime, int> volume = t => (int)value(t) * 2 + 40;
+
+            return Enumerable.Range(0, count)
+                .Select(i => new
+                {
+                    open = from + TimeSpan.FromSeconds(i * intRange),
+                    close = from + TimeSpan.FromSeconds((i + 1) * intRange)
+                })
+                .Select(oc => new
+                {
+                    oc.open,
+                    oc.close,
+                    times = Enumerable.Range(0, intRange / 60)
+                        .Select(i => oc.open + TimeSpan.FromMinutes(i))
+                        .ToArray()
+                })
+                .Where(oc => oc.open.DayOfWeek != DayOfWeek.Saturday || oc.open.DayOfWeek != DayOfWeek.Sunday)
+                .Select(oct => new
+                {
+                    oct.open,
+                    oct.close,
+                    prices = oct.times.Select(t => price(t)).ToArray(),
+                    volumes = oct.times.Select(t => volume(t)).ToArray()
+                })
+                .Select(ocpv => new Candle(ocpv.open, ocpv.prices.First(), ocpv.prices.Max(), ocpv.prices.Min(), ocpv.prices.Last(), ocpv.volumes.Sum()));
+        }
     }
 }

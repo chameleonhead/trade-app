@@ -70,9 +70,18 @@ namespace TradeApp.Charting
             var chart = chartManager.GetChart(symbol, range);
             // この時点で100件分のチャートが取得済み
             chart.AddIndicator("ATR10", new AtrIndicator(10));
+            var snapshot1 = chart.Snapshot;
+            Assert.AreEqual(100, snapshot1.Candles.Length);
+            Assert.AreEqual(100, snapshot1.Plot<SingleValue>("ATR10").Length);
 
             // これでチャートが更新される
             chartManager.Update(to);
+            var snapshot2 = chart.Snapshot;
+            Assert.AreEqual(100, snapshot2.Candles.Length);
+            Assert.AreEqual(100, snapshot2.Plot<SingleValue>("ATR10").Length);
+
+            // SNAPSHOT1とSNAPSHOT2のインスタンスが異なることを確認
+            Assert.AreNotSame(snapshot1, snapshot2);
         }
     }
 }

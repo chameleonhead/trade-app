@@ -2,15 +2,16 @@
 
 namespace TradeApp.Charting.Data
 {
-    public class CandleFetcher
+    public class CandleChartUpdater
     {
         private TradingSymbol symbol;
         private ChartRange range;
         private CandleChartStore store;
         private CandleProvider provider;
+
         private ChartEntryEntity entry;
 
-        public CandleFetcher(TradingSymbol symbol, ChartRange range, CandleChartStore store, CandleProvider provider)
+        public CandleChartUpdater(TradingSymbol symbol, ChartRange range, CandleChartStore store, CandleProvider provider)
         {
             this.symbol = symbol;
             this.range = range;
@@ -26,9 +27,10 @@ namespace TradeApp.Charting.Data
 
         public void Fetch(DateTime from, DateTime to)
         {
-            if(store.IsCacheAvailable(entry, from, to))
+            if (!store.IsCacheAvailable(entry, from, to))
             {
-                return;
+                var candles = provider.GetCandles(symbol, range, from, to);
+                store.AddCandles(entry, from, to, candles);
             }
         }
     }

@@ -1,15 +1,24 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using System;
+using System.Linq;
 
 namespace TradeApp.Charting.Data
 {
     public class CandleChartStore : DbContext
     {
+        public CandleChartStore() : base(new DbContextOptionsBuilder()
+                .UseSqlite($"Data Source=candles.db")
+                .Options)
+        {
+        }
+
+        public CandleChartStore(DbContextOptions options) : base(options)
+        {
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            optionsBuilder.UseSqlite($"Data Source=candles.db");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -20,13 +29,13 @@ namespace TradeApp.Charting.Data
         }
 
         public DbSet<ChartEntryEntity> ChartEntries { get; set; }
-
-        internal bool IsCacheAvailable(ChartEntryEntity entry, DateTime from, DateTime to)
-        {
-            throw new NotImplementedException();
-        }
-
+        public DbSet<CandleFetchHistory> FetchHistories { get; set; }
         public DbSet<CandleEntity> Candles { get; set; }
+
+        public bool IsCacheAvailable(ChartEntryEntity entry, DateTime from, DateTime to)
+        {
+            return FetchHistories.Where(fh => fh.From >= from && fh.To <= to).Any();
+        }
 
         public ChartEntryEntity FindOrCreateEntry(TradingSymbol symbol, ChartRange range)
         {
@@ -44,17 +53,25 @@ namespace TradeApp.Charting.Data
             return entry;
         }
 
-        public void AddCandle(Candle candle)
+        public void AddCandles(ChartEntryEntity entry, DateTime from, DateTime to, Candle[] candles)
         {
-            Candles.AddAsync(new CandleEntity()
+            FetchHistories.Add(new CandleFetchHistory()
             {
-                Time = candle.Time,
-                Open = candle.Open,
-                High = candle.High,
-                Low = candle.Low,
-                Close = candle.Close,
-                Volume = candle.Volume
+                ChartEntry = entry,
+                From = from,
+                To = to
             });
+            Candles.AddRangeAsync(
+                candles.Select(candle => new CandleEntity()
+                {
+                    ChartEntry = entry,
+                    Time = candle.Time,
+                    Open = candle.Open,
+                    High = candle.High,
+                    Low = candle.Low,
+                    Close = candle.Close,
+                    Volume = candle.Volume
+                }));
             SaveChangesAsync();
         }
     }

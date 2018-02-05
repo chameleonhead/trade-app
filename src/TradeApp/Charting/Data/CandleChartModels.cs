@@ -19,6 +19,18 @@ namespace TradeApp.Charting.Data
         public virtual ICollection<CandleEntity> Candles { get; set; }
     }
 
+    public class CandleFetchHistory
+    {
+        [Key]
+        public int Id { get; set; }
+
+        public DateTime From { get; set; }
+        public DateTime To { get; set; }
+
+        public virtual ChartEntryEntity ChartEntry { get; set; }
+    }
+
+
     public class CandleEntity
     {
         [Key]
