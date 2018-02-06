@@ -20,7 +20,7 @@ namespace TradeApp.Charting.Data
 
             // プロバイダーのセットアップ
             var provider = new MockCandleProvider();
-            provider.SetCandle(candles);
+            provider.SetCandle(range, candles);
 
             // ストアは空
             using (var store = new CandleChartStore(new DbContextOptionsBuilder()
@@ -46,7 +46,7 @@ namespace TradeApp.Charting.Data
 
             // プロバイダーのセットアップ
             var provider = new MockCandleProvider();
-            provider.SetCandle(candles);
+            provider.SetCandle(range, candles);
 
             // ストアは空
             using (var store = new CandleChartStore(new DbContextOptionsBuilder()
