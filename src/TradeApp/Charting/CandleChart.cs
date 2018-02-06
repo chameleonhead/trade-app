@@ -86,6 +86,11 @@ namespace TradeApp.Charting
 
         public void AddCandle(Candle candle)
         {
+            if (candle.Time == latestCandle?.Time)
+            {
+                return;
+            }
+
             addCandle(candle);
             updateSnapshot();
         }
@@ -94,7 +99,11 @@ namespace TradeApp.Charting
         {
             foreach (var candle in candles)
             {
-                AddCandle(candle);
+                if (candle.Time == latestCandle?.Time)
+                {
+                    continue;
+                }
+                addCandle(candle);
             }
             updateSnapshot();
         }
@@ -112,7 +121,7 @@ namespace TradeApp.Charting
 
         private void addCandle(Candle candle)
         {
-            if (candle.Time <= latestCandle?.Time)
+            if (candle.Time < latestCandle?.Time)
             {
                 throw new InvalidOperationException($"{nameof(candle)} should be after last inserted candle.");
             }

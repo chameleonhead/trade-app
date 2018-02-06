@@ -37,6 +37,15 @@ namespace TradeApp.Charting.Data
             return FetchHistories.Where(fh => fh.From >= from && fh.To <= to).Any();
         }
 
+        public Candle[] GetCandles(ChartEntryEntity entry, DateTime from, DateTime to)
+        {
+            return Candles
+                .Where(c => c.ChartEntry.Id == entry.Id && c.Time >= from && c.Time <= to)
+                .OrderBy(c => c.Time)
+                .Select(c => new Candle(c.Time, c.Open, c.High, c.Low, c.Close, c.Volume))
+                .ToArray();
+        }
+
         public ChartEntryEntity FindOrCreateEntry(TradingSymbol symbol, ChartRange range)
         {
             var entry = ChartEntries.Where(ce => ce.Symbol == symbol.Symbol && ce.Range == range).FirstOrDefault();

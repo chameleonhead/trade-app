@@ -25,11 +25,17 @@ namespace TradeApp.Charting.Data
 
         public void Fetch(DateTime from, DateTime to)
         {
-            if (!store.IsCacheAvailable(entry, from, to))
+            Candle[] candles;
+            if (store.IsCacheAvailable(entry, from, to))
             {
-                var candles = provider.GetCandles(chart.Symbol, chart.Range, from, to);
+                candles = store.GetCandles(entry, from, to);
+            }
+            else
+            {
+                candles = provider.GetCandles(chart.Symbol, chart.Range, from, to);
                 store.AddCandles(entry, from, to, candles);
             }
+            chart.AddCandles(candles);
         }
     }
 }
