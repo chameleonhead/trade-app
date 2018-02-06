@@ -25,6 +25,7 @@ namespace TradeApp.Charting.Data
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<ChartEntryEntity>().ToTable("ChartEntries");
+            modelBuilder.Entity<CandleFetchHistory>().ToTable("FetchHistories");
             modelBuilder.Entity<CandleEntity>().ToTable("Candles");
         }
 
