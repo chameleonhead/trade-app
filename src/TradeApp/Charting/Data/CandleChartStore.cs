@@ -35,7 +35,7 @@ namespace TradeApp.Charting.Data
 
         public bool IsCacheAvailable(ChartEntryEntity entry, DateTime from, DateTime to)
         {
-            return FetchHistories.Where(fh => fh.From >= from && fh.To <= to).Any();
+            return FetchHistories.Where(fh => fh.ChartEntry.Id == entry.Id && fh.From >= from && fh.To <= to).Any();
         }
 
         public Candle[] GetCandles(ChartEntryEntity entry, DateTime from, DateTime to)

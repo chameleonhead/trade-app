@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using TradeApp.Charting.Data;
 
 namespace TradeApp.Charting
@@ -8,8 +10,8 @@ namespace TradeApp.Charting
         private Func<TradingSymbol, ChartRange, CandleProvider> candleProviderFactory;
         private CandleChartStore store;
         private DateTime currentTime;
-        private CandleChartUpdater updater;
-        private CandleChart chart;
+        private Dictionary<Tuple<TradingSymbol, ChartRange>, Tuple<CandleChart, CandleChartUpdater>> charts
+            = new Dictionary<Tuple<TradingSymbol, ChartRange>, Tuple<CandleChart, CandleChartUpdater>>();
 
         public CandleChartManager(DateTime currentTime, Func<TradingSymbol, ChartRange, CandleProvider> candleProviderFactory) : this(currentTime, candleProviderFactory, new CandleChartStore())
         {
@@ -24,9 +26,16 @@ namespace TradeApp.Charting
 
         public CandleChart GetChart(TradingSymbol symbol, ChartRange range)
         {
+            var chartKey = Tuple.Create(symbol, range);
+            if (charts.TryGetValue(chartKey, out var chartAndUpdater))
+            {
+                return chartAndUpdater.Item1;
+            }
+
             var provider = candleProviderFactory(symbol, range);
-            chart = new CandleChart(symbol, range);
-            updater = new CandleChartUpdater(chart, store, provider);
+            var chart = new CandleChart(symbol, range);
+            var updater = new CandleChartUpdater(chart, store, provider);
+            charts.Add(chartKey, Tuple.Create(chart, updater));
             var now = currentTime;
             updater.Fetch(now - TimeSpan.FromSeconds(200 * (int)range), now);
             return chart;
@@ -34,7 +43,8 @@ namespace TradeApp.Charting
 
         public void Update(DateTime to)
         {
-            updater.Fetch(currentTime, to);
+            charts.Values.ToList()
+                .ForEach(cau => cau.Item2.Fetch(currentTime, to));
             currentTime = to;
         }
     }
