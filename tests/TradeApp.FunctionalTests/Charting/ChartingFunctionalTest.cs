@@ -63,7 +63,7 @@ namespace TradeApp.Charting
             var to = new DateTime(2017, 12, 1, 0, 2, 0, DateTimeKind.Utc);
 
             var apiEndpoint = new OandaApi(_server.BaseUri, _server.DefaultAccessToken);
-            var provider = new OandaCandleProvider(apiEndpoint) as CandleProvider;
+            var provider = new OandaCandleProvider(apiEndpoint) as ICandleProvider;
 
             var chartManager = new CandleChartManager(from, (s, r) => provider);
 

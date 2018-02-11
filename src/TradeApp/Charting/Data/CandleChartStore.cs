@@ -35,13 +35,29 @@ namespace TradeApp.Charting.Data
 
         public bool IsCacheAvailable(ChartEntryEntity entry, DateTime from, DateTime to)
         {
-            return FetchHistories.Where(fh => fh.ChartEntry.Id == entry.Id && fh.From >= from && fh.To <= to).Any();
+            return FetchHistories.Where(fh => fh.ChartEntry.Id == entry.Id && fh.From <= from && fh.To >= to).Any();
+        }
+
+        public bool IsCacheAvailable(ChartEntryEntity entry, DateTime to, int takeCount)
+        {
+            return FetchHistories.Where(fh => fh.ChartEntry.Id == entry.Id && fh.From <= to && fh.To >= to).Sum(fh => fh.FetchCount) >= takeCount;
         }
 
         public Candle[] GetCandles(ChartEntryEntity entry, DateTime from, DateTime to)
         {
             return Candles
                 .Where(c => c.ChartEntry.Id == entry.Id && c.Time >= from && c.Time <= to)
+                .OrderBy(c => c.Time)
+                .Select(c => new Candle(c.Time, c.Open, c.High, c.Low, c.Close, c.Volume))
+                .ToArray();
+        }
+
+        public Candle[] GetCandles(ChartEntryEntity entry, DateTime to, int takeCount)
+        {
+            return Candles
+                .Where(c => c.ChartEntry.Id == entry.Id && c.Time <= to)
+                .OrderByDescending(c => c.Time)
+                .Take(takeCount)
                 .OrderBy(c => c.Time)
                 .Select(c => new Candle(c.Time, c.Open, c.High, c.Low, c.Close, c.Volume))
                 .ToArray();
@@ -65,12 +81,23 @@ namespace TradeApp.Charting.Data
 
         public void AddCandles(ChartEntryEntity entry, DateTime from, DateTime to, Candle[] candles)
         {
+            FetchHistories.RemoveRange(FetchHistories
+                .Where(
+                    history => history.ChartEntry.Id == entry.Id
+                        && history.From >= from
+                        && history.To <= to));
             FetchHistories.Add(new CandleFetchHistory()
             {
                 ChartEntry = entry,
                 From = from,
-                To = to
+                To = to,
+                FetchCount = candles.Length
             });
+            Candles.RemoveRange(Candles
+                .Where(
+                    candle => candle.ChartEntry.Id == entry.Id
+                        && candle.Time >= from
+                        && candle.Time <= to));
             Candles.AddRangeAsync(
                 candles.Select(candle => new CandleEntity()
                 {
@@ -83,6 +110,11 @@ namespace TradeApp.Charting.Data
                     Volume = candle.Volume
                 }));
             SaveChangesAsync();
+        }
+
+        public void AddCandles(ChartEntryEntity entry, DateTime to, Candle[] candles)
+        {
+            AddCandles(entry, candles.OrderBy(c => c.Time).First().Time, to, candles);
         }
     }
 

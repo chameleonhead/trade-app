@@ -154,6 +154,7 @@ namespace TradeApp.Charting
 
         public TradingSymbol Symbol => symbol;
         public ChartRange Range => range;
+        public DateTime LatestCandleTime => latestCandle.Time;
         public CandleChartSnapshot Snapshot { get; private set; }
     }
 }

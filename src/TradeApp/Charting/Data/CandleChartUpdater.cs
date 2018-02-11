@@ -6,34 +6,45 @@ namespace TradeApp.Charting.Data
     {
         private CandleChart chart;
         private CandleChartStore store;
-        private CandleProvider provider;
+        private ICandleProvider provider;
 
-        private ChartEntryEntity entry;
+        private Lazy<ChartEntryEntity> entry;
 
-        public CandleChartUpdater(CandleChart chart, CandleChartStore store, CandleProvider provider)
+        public CandleChartUpdater(CandleChart chart, CandleChartStore store, ICandleProvider provider)
         {
             this.chart = chart;
             this.store = store;
             this.provider = provider;
-            initialize();
+            this.entry = new Lazy<ChartEntryEntity>(() => store.FindOrCreateEntry(chart.Symbol, chart.Range));
         }
 
-        private void initialize()
-        {
-            entry = store.FindOrCreateEntry(chart.Symbol, chart.Range);
-        }
-
-        public void Fetch(DateTime from, DateTime to)
+        public void Update(DateTime to, int takeCount)
         {
             Candle[] candles;
-            if (store.IsCacheAvailable(entry, from, to))
+            if (store.IsCacheAvailable(entry.Value, to, takeCount))
             {
-                candles = store.GetCandles(entry, from, to);
+                candles = store.GetCandles(entry.Value, to, takeCount);
+            }
+            else
+            {
+                candles = provider.GetCandles(chart.Symbol, chart.Range, to, takeCount);
+                store.AddCandles(entry.Value, to, candles);
+            }
+            chart.AddCandles(candles);
+        }
+
+        public void Update(DateTime to)
+        {
+            Candle[] candles;
+            var from = chart.LatestCandleTime;
+            if (store.IsCacheAvailable(entry.Value, from, to))
+            {
+                candles = store.GetCandles(entry.Value, from, to);
             }
             else
             {
                 candles = provider.GetCandles(chart.Symbol, chart.Range, from, to);
-                store.AddCandles(entry, from, to, candles);
+                store.AddCandles(entry.Value, from, to, candles);
             }
             chart.AddCandles(candles);
         }

@@ -7,17 +7,17 @@ namespace TradeApp.Charting
 {
     public class CandleChartManager
     {
-        private Func<TradingSymbol, ChartRange, CandleProvider> candleProviderFactory;
+        private Func<TradingSymbol, ChartRange, ICandleProvider> candleProviderFactory;
         private CandleChartStore store;
         private DateTime currentTime;
         private Dictionary<Tuple<TradingSymbol, ChartRange>, Tuple<CandleChart, CandleChartUpdater>> charts
             = new Dictionary<Tuple<TradingSymbol, ChartRange>, Tuple<CandleChart, CandleChartUpdater>>();
 
-        public CandleChartManager(DateTime currentTime, Func<TradingSymbol, ChartRange, CandleProvider> candleProviderFactory) : this(currentTime, candleProviderFactory, new CandleChartStore())
+        public CandleChartManager(DateTime currentTime, Func<TradingSymbol, ChartRange, ICandleProvider> candleProviderFactory) : this(currentTime, candleProviderFactory, new CandleChartStore())
         {
         }
 
-        public CandleChartManager(DateTime currentTime, Func<TradingSymbol, ChartRange, CandleProvider> candleProviderFactory, CandleChartStore store)
+        public CandleChartManager(DateTime currentTime, Func<TradingSymbol, ChartRange, ICandleProvider> candleProviderFactory, CandleChartStore store)
         {
             this.candleProviderFactory = candleProviderFactory;
             this.store = store;
@@ -37,14 +37,14 @@ namespace TradeApp.Charting
             var updater = new CandleChartUpdater(chart, store, provider);
             charts.Add(chartKey, Tuple.Create(chart, updater));
             var now = currentTime;
-            updater.Fetch(now - TimeSpan.FromSeconds(200 * (int)range), now);
+            updater.Update(now, 100);
             return chart;
         }
 
         public void Update(DateTime to)
         {
             charts.Values.ToList()
-                .ForEach(cau => cau.Item2.Fetch(currentTime, to));
+                .ForEach(cau => cau.Item2.Update(to));
             currentTime = to;
         }
     }

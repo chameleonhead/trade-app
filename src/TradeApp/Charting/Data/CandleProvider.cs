@@ -3,16 +3,17 @@ using System.Collections.Generic;
 
 namespace TradeApp.Charting.Data
 {
-    public abstract class CandleProvider
+    public interface ICandleProvider
     {
-        public abstract Candle[] GetCandles(TradingSymbol symbol, ChartRange range, DateTime from, DateTime to);
+        Candle[] GetCandles(TradingSymbol symbol, ChartRange range, DateTime to, int count);
+        Candle[] GetCandles(TradingSymbol symbol, ChartRange range, DateTime from, DateTime to);
     }
 
     public static class CandleProviderFactory
     {
-        private static Dictionary<TradingSymbol, Func<CandleProvider>> factories = new Dictionary<TradingSymbol, Func<CandleProvider>>();
+        private static Dictionary<TradingSymbol, Func<ICandleProvider>> factories = new Dictionary<TradingSymbol, Func<ICandleProvider>>();
 
-        public static void Register(TradingSymbol symbol, Func<CandleProvider> factory)
+        public static void Register(TradingSymbol symbol, Func<ICandleProvider> factory)
         {
             factories.Add(symbol, factory);
         }
@@ -22,7 +23,7 @@ namespace TradeApp.Charting.Data
             factories.Remove(symbol);
         }
 
-        public static CandleProvider GetInstance(TradingSymbol symbol)
+        public static ICandleProvider GetInstance(TradingSymbol symbol)
         {
             if (factories.TryGetValue(symbol, out var factory))
             {

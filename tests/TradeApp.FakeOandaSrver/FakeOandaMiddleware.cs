@@ -251,7 +251,7 @@ namespace TradeApp.FakeOandaSrver
             if (start == null && end != null)
             {
                 end = new DateTime((end.Value.Ticks / TimeSpan.FromSeconds((int)granularity).Ticks) * TimeSpan.FromSeconds((int)granularity).Ticks);
-                start = end - (interval * count);
+                start = end - (interval * (count - 1));
             }
             if (candleFormat == "bidask")
             {

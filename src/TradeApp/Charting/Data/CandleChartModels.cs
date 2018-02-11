@@ -26,6 +26,7 @@ namespace TradeApp.Charting.Data
 
         public DateTime From { get; set; }
         public DateTime To { get; set; }
+        public int FetchCount { get; set; }
 
         public virtual ChartEntryEntity ChartEntry { get; set; }
     }
