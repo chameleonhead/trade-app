@@ -37,7 +37,7 @@ namespace TradeApp.FakeOandaSrver
             public int OpenTrades { get { return 0; } }
             public int OpenOrders { get { return 0; } }
 
-            public List<FakeOandaOrder> Orders { get; } = new List<FakeOandaOrder>();
+            public Dictionary<int, FakeOandaOrder> Orders { get; } = new Dictionary<int, FakeOandaOrder>();
         }
 
         public class FakeOandaInstrument
@@ -291,12 +291,24 @@ namespace TradeApp.FakeOandaSrver
             return account;
         }
 
-        public FakeOandaOrder CreateMarketOrder(
+        public FakeOandaOrder CreateBuyOrder(int accountId, string instrument, int units, FakeOandaOrderType type, DateTime expiry, decimal price, decimal? lowerBound = null, decimal? upperBound = null, decimal? stopLoss = null, decimal? takeProfit = null, decimal? trailingStop = null)
+        {
+            return CreateOrder(accountId, instrument, units, type, FakeOandaSide.buy, expiry, price, lowerBound, upperBound, stopLoss, takeProfit, trailingStop);
+        }
+
+        public FakeOandaOrder CreateSellOrder(int accountId, string instrument, int units, FakeOandaOrderType type, DateTime expiry, decimal price, decimal? lowerBound = null, decimal? upperBound = null, decimal? stopLoss = null, decimal? takeProfit = null, decimal? trailingStop = null)
+        {
+            return CreateOrder(accountId, instrument, units, type, FakeOandaSide.sell, expiry, price, lowerBound, upperBound, stopLoss, takeProfit, trailingStop);
+        }
+
+        public FakeOandaOrder CreateOrder(
             int accountId,
             string instrument,
             int units,
+            FakeOandaOrderType type,
             FakeOandaSide side,
-            DateTime? expiry = null,
+            DateTime expiry,
+            decimal price,
             decimal? lowerBound = null,
             decimal? upperBound = null,
             decimal? stopLoss = null,
@@ -304,20 +316,20 @@ namespace TradeApp.FakeOandaSrver
             decimal? trailingStop = null)
         {
             var order = new FakeOandaOrder(
-                _orderId++, 
-                instrument, 
-                units, 
-                side, 
-                FakeOandaOrderType.market, 
-                CurrentTime, 
-                null, 
-                takeProfit, 
-                stopLoss, 
-                expiry, 
-                upperBound, 
-                lowerBound, 
+                _orderId++,
+                instrument,
+                units,
+                side,
+                type,
+                CurrentTime,
+                price,
+                takeProfit,
+                stopLoss,
+                expiry,
+                upperBound,
+                lowerBound,
                 trailingStop);
-            Accounts[accountId].Orders.Add(order);
+            Accounts[accountId].Orders.Add(order.Id, order);
             return order;
         }
     }

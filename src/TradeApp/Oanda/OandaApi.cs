@@ -39,6 +39,58 @@ namespace TradeApp.Oanda
             public Order[] Orders { get; set; }
         }
 
+        private class OrderSideJsonConverter : JsonConverter
+        {
+            public override bool CanConvert(Type objectType) => objectType == typeof(OrderSide);
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                var value = serializer.Deserialize<string>(reader);
+                switch (value)
+                {
+                    case "buy":
+                        return OrderSide.Buy;
+                    case "sell":
+                        return OrderSide.Sell;
+                    default:
+                        throw new InvalidCastException($"can't convert json to OrderSide: {value}");
+                }
+            }
+
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class OrderTypeJsonConverter : JsonConverter
+        {
+            public override bool CanConvert(Type objectType) => objectType == typeof(OrderType);
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                var value = serializer.Deserialize<string>(reader);
+                switch (value)
+                {
+                    case "limit":
+                        return OrderType.Limit;
+                    case "stop":
+                        return OrderType.Stop;
+                    case "marketIfTouched":
+                        return OrderType.MarketIfTouched;
+                    case "market":
+                        return OrderType.Market;
+                    default:
+                        throw new InvalidCastException($"can't convert json to OrderType: {value}");
+                }
+            }
+
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         HttpClient client;
         int? accountId;
 

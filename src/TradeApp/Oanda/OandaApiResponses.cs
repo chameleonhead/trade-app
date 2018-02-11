@@ -99,6 +99,38 @@ namespace TradeApp.Oanda
     }
 
     /// <summary>
+    /// 売買区別 (buy=買い、sell=売り)
+    /// </summary>
+    public enum OrderSide
+    {
+        Buy = 1,
+        Sell,
+    }
+
+    /// <summary>
+    /// 注文のタイプ
+    /// </summary>
+    public enum OrderType
+    {
+        /// <summary>
+        /// 指値注文
+        /// </summary>
+        Limit = 1,
+        /// <summary>
+        /// 逆指値注文
+        /// </summary>
+        Stop,
+        /// <summary>
+        /// Market If Touched
+        /// </summary>
+        MarketIfTouched,
+        /// <summary>
+        /// 成行注文
+        /// </summary>
+        Market,
+    }
+
+    /// <summary>
     /// APIエラーレスポンス
     /// </summary>
     public class ErrorInfo
@@ -257,8 +289,8 @@ namespace TradeApp.Oanda
         public int Id { get; set; }
         public string Instrument { get; set; }
         public int Units { get; set; }
-        public string Side { get; set; }
-        public string Type { get; set; }
+        public OrderSide Side { get; set; }
+        public OrderType Type { get; set; }
         public DateTime Time { get; set; }
         public decimal? Price { get; set; }
         public decimal? TakeProfit { get; set; }

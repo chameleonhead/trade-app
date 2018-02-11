@@ -101,7 +101,7 @@ namespace TradeApp.FakeOandaSrver
             var instrument = ParseQuery<string>(context.Request.Query["instrument"]);
             var ids = ParseQuery<int[]>(context.Request.Query["ids"]) ?? new int[0];
 
-            var orders = _context.Accounts[accountId].Orders as IEnumerable<FakeOandaContext.FakeOandaOrder>;
+            var orders = _context.Accounts[accountId].Orders.Values as IEnumerable<FakeOandaContext.FakeOandaOrder>;
 
             if (ids.Length > 0)
             {
