@@ -39,20 +39,20 @@ namespace TradeApp.Oanda
             Assert.AreEqual(now, orderResponse.Time);
             Assert.AreEqual(units, orderResponse.TradeOpened.Units);
             Assert.AreEqual(side, orderResponse.TradeOpened.Side);
-            Assert.AreEqual(null, orderResponse.TradeOpened.TakeProfit);
-            Assert.AreEqual(null, orderResponse.TradeOpened.StopLoss);
-            Assert.AreEqual(null, orderResponse.TradeOpened.TrailingStop);
+            Assert.AreEqual(0, orderResponse.TradeOpened.TakeProfit);
+            Assert.AreEqual(0, orderResponse.TradeOpened.StopLoss);
+            Assert.AreEqual(0, orderResponse.TradeOpened.TrailingStop);
 
             var context = _server.Context;
             var actual = context.Accounts[_server.DefaultAccountId].Trades[orderResponse.TradeOpened.Id];
             Assert.AreEqual(actual.Instrument, orderResponse.Instrument);
             Assert.AreEqual(actual.Units, orderResponse.TradeOpened.Units);
-            Assert.AreEqual(actual.Side, orderResponse.TradeOpened.Side);
+            Assert.AreEqual(actual.Side.ToString().ToUpper(), orderResponse.TradeOpened.Side.ToString().ToUpper());
             Assert.AreEqual(actual.Time, orderResponse.Time);
             Assert.AreEqual(actual.Price, orderResponse.Price);
-            Assert.AreEqual(actual.TakeProfit, orderResponse.TradeOpened.TakeProfit);
-            Assert.AreEqual(actual.StopLoss, orderResponse.TradeOpened.StopLoss);
-            Assert.AreEqual(actual.TrailingStop, orderResponse.TradeOpened.TrailingStop);
+            Assert.AreEqual(actual.TakeProfit ?? 0, orderResponse.TradeOpened.TakeProfit);
+            Assert.AreEqual(actual.StopLoss ?? 0, orderResponse.TradeOpened.StopLoss);
+            Assert.AreEqual(actual.TrailingStop ?? 0, orderResponse.TradeOpened.TrailingStop);
         }
     }
 }

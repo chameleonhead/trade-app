@@ -43,27 +43,27 @@ namespace TradeApp.Oanda
             Assert.AreEqual(price, orderResponse.Price);
             Assert.AreEqual(units, orderResponse.OrderOpened.Units);
             Assert.AreEqual(side, orderResponse.OrderOpened.Side);
-            Assert.AreEqual(null, orderResponse.OrderOpened.TakeProfit);
-            Assert.AreEqual(null, orderResponse.OrderOpened.StopLoss);
+            Assert.AreEqual(0, orderResponse.OrderOpened.TakeProfit);
+            Assert.AreEqual(0, orderResponse.OrderOpened.StopLoss);
             Assert.AreEqual(expiry, orderResponse.OrderOpened.Expiry);
-            Assert.AreEqual(null, orderResponse.OrderOpened.UpperBound);
-            Assert.AreEqual(null, orderResponse.OrderOpened.LowerBound);
-            Assert.AreEqual(null, orderResponse.OrderOpened.TrailingStop);
+            Assert.AreEqual(0, orderResponse.OrderOpened.UpperBound);
+            Assert.AreEqual(0, orderResponse.OrderOpened.LowerBound);
+            Assert.AreEqual(0, orderResponse.OrderOpened.TrailingStop);
 
             var context = _server.Context;
             var actual = context.Accounts[_server.DefaultAccountId].Orders.Find(orderResponse.OrderOpened.Id);
             Assert.AreEqual(actual.Instrument, orderResponse.Instrument);
             Assert.AreEqual(actual.Units, orderResponse.OrderOpened.Units);
-            Assert.AreEqual(actual.Side, orderResponse.OrderOpened.Side);
-            Assert.AreEqual(actual.Type, OrderType.Limit);
+            Assert.AreEqual(actual.Side.ToString().ToUpper(), orderResponse.OrderOpened.Side.ToString().ToUpper());
+            Assert.AreEqual(actual.Type.ToString().ToUpper(), OrderType.Limit.ToString().ToUpper());
             Assert.AreEqual(actual.Time, orderResponse.Time);
             Assert.AreEqual(actual.Price, orderResponse.Price);
-            Assert.AreEqual(actual.TakeProfit, orderResponse.OrderOpened.TakeProfit);
-            Assert.AreEqual(actual.StopLoss, orderResponse.OrderOpened.StopLoss);
+            Assert.AreEqual(actual.TakeProfit ?? 0, orderResponse.OrderOpened.TakeProfit);
+            Assert.AreEqual(actual.StopLoss ?? 0, orderResponse.OrderOpened.StopLoss);
             Assert.AreEqual(actual.Expiry, orderResponse.OrderOpened.Expiry);
-            Assert.AreEqual(actual.UpperBound, orderResponse.OrderOpened.UpperBound);
-            Assert.AreEqual(actual.LowerBound, orderResponse.OrderOpened.LowerBound);
-            Assert.AreEqual(actual.TrailingStop, orderResponse.OrderOpened.TrailingStop);
+            Assert.AreEqual(actual.UpperBound ?? 0, orderResponse.OrderOpened.UpperBound);
+            Assert.AreEqual(actual.LowerBound ?? 0, orderResponse.OrderOpened.LowerBound);
+            Assert.AreEqual(actual.TrailingStop ?? 0, orderResponse.OrderOpened.TrailingStop);
         }
     }
 }

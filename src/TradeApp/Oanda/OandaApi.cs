@@ -108,7 +108,7 @@ namespace TradeApp.Oanda
         {
             this.client = client;
             this.accountId = accountId;
-            this.converters = new JsonConverter[] 
+            this.converters = new JsonConverter[]
             {
                 new OrderSideJsonConverter(),
             };
@@ -271,8 +271,8 @@ namespace TradeApp.Oanda
             var param = new Dictionary<string, string>();
             param.Add("instrument", instrument);
             param.Add("units", units.ToString());
-            param.Add("side", side.ToString());
-            param.Add("type", OrderTypeToRequestRepresentation(OrderType.Market));
+            param.Add("side", OrderSideToRequestRepresentation(side));
+            param.Add("type", OrderTypeToRequestRepresentation(type));
             param.Add("expiry", XmlConvert.ToString(expiry, XmlDateTimeSerializationMode.Utc));
             param.Add("price", price.ToString());
             if (lowerBound != null)
@@ -332,7 +332,7 @@ namespace TradeApp.Oanda
 
         private static string OrderTypeToRequestRepresentation(OrderType type)
         {
-            switch(type)
+            switch (type)
             {
                 case OrderType.Limit:
                     return "limit";

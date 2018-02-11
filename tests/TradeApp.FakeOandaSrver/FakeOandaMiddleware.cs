@@ -161,7 +161,7 @@ namespace TradeApp.FakeOandaSrver
             var units = ParseQuery<int>(context.Request.Form["units"]);
             var side = ParseQuery<FakeOandaContext.FakeOandaSide>(context.Request.Form["side"]);
             var type = ParseQuery<FakeOandaContext.FakeOandaOrderType>(context.Request.Form["type"]);
-            var expiry = ParseQuery<DateTime>(context.Request.Form["expiry"]);
+            var expiry = ParseQuery<DateTime?>(context.Request.Form["expiry"]);
             var price = ParseQuery<decimal?>(context.Request.Form["price"]);
             var lowerBound = ParseQuery<decimal?>(context.Request.Form["lowerBound"]);
             var upperBound = ParseQuery<decimal?>(context.Request.Form["upperBound"]);
@@ -182,29 +182,58 @@ namespace TradeApp.FakeOandaSrver
                     takeProfit,
                     trailingStop);
 
-                var dict = new Dictionary<string, object>();
-
-                await context.Response.WriteAsync(JsonConvert.SerializeObject(dict));
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(new
+                {
+                    instrument = trade.Instrument,
+                    time = trade.Time,
+                    price = trade.Price,
+                    tradeOpened = new
+                    {
+                        id = trade.Id,
+                        units = trade.Units,
+                        side = trade.Side.ToString(),
+                        takeProfit = trade.TakeProfit ?? 0,
+                        stopLoss = trade.StopLoss ?? 0,
+                        trailingStop = trade.TrailingStop ?? 0,
+                    },
+                    tradesClosed = new object[0],
+                    tradeReduced = new { },
+                }));
             }
             else
             {
                 var order = _context.CreateOrder(
-                    accountId, 
-                    instrument, 
-                    units, 
-                    type, 
-                    side, 
-                    expiry, 
-                    price.Value, 
-                    lowerBound, 
-                    upperBound, 
-                    stopLoss, 
-                    takeProfit, 
+                    accountId,
+                    instrument,
+                    units,
+                    type,
+                    side,
+                    expiry.Value,
+                    price.Value,
+                    lowerBound,
+                    upperBound,
+                    stopLoss,
+                    takeProfit,
                     trailingStop);
 
-                var dict = new Dictionary<string, object>();
-
-                await context.Response.WriteAsync(JsonConvert.SerializeObject(dict));
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(new
+                {
+                    instrument = order.Instrument,
+                    time = order.Time,
+                    price = order.Price,
+                    orderOpened = new
+                    {
+                        id = order.Id,
+                        units = order.Units,
+                        side = order.Side.ToString(),
+                        takeProfit = order.TakeProfit ?? 0,
+                        stopLoss = order.StopLoss ?? 0,
+                        expiry = order.Expiry,
+                        upperBound = order.UpperBound ?? 0,
+                        lowerBound = order.LowerBound ?? 0,
+                        trailingStop = order.TrailingStop ?? 0,
+                    },
+                }));
             }
         }
 
@@ -407,19 +436,19 @@ namespace TradeApp.FakeOandaSrver
                 {
                     return (T)(object)Enum.Parse(type, s);
                 }
-                if (type == typeof(int?))
+                if (type == typeof(int?) || type == typeof(int))
                 {
                     return (T)(object)int.Parse(s);
                 }
-                if (type == typeof(decimal?))
+                if (type == typeof(decimal?) || type == typeof(decimal))
                 {
                     return (T)(object)decimal.Parse(s);
                 }
-                if (type == typeof(bool?))
+                if (type == typeof(bool?) || type == typeof(bool))
                 {
                     return bool.TryParse(s, out var b) ? (T)(object)b : default(T);
                 }
-                if (type == typeof(DateTime?))
+                if (type == typeof(DateTime?) || type == typeof(DateTime))
                 {
                     return (T)(object)XmlConvert.ToDateTime(s, XmlDateTimeSerializationMode.Utc);
                 }
