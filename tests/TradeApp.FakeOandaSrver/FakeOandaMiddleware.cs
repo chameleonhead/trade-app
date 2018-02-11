@@ -23,48 +23,48 @@ namespace TradeApp.FakeOandaSrver
             _context = context;
         }
 
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             var request = context.Request;
-            if (request.Path.StartsWithSegments("/v1/accounts", out var remaining))
+            if (request.Method == "GET")
             {
-                var match = Regex.Match(remaining, @"^/?(\d+)");
-                if (match.Success)
+                if (request.Path.StartsWithSegments("/v1/accounts", out var remaining))
                 {
-                    var accountId = int.Parse(match.Groups[1].Value);
-                    if (remaining.StartsWithSegments($"/{accountId}/orders"))
+                    var match = Regex.Match(remaining, @"^/?(\d+)");
+                    if (match.Success)
                     {
-                        await InvokeOrders(context, accountId);
+                        var accountId = int.Parse(match.Groups[1].Value);
+                        if (remaining.StartsWithSegments($"/{accountId}/orders"))
+                        {
+                            return InvokeGetOrders(context, accountId);
+                        }
+                        else
+                        {
+                            return InvokeGetAccount(context, accountId);
+                        }
                     }
                     else
                     {
-                        await InvokeAccount(context, accountId);
+                        return InvokeGetAccounts(context);
                     }
                 }
-                else
+                else if (request.Path.StartsWithSegments("/v1/instruments"))
                 {
-                    await InvokeAccounts(context);
+                    return InvokeGetInstruments(context);
+                }
+                else if (request.Path.StartsWithSegments("/v1/prices"))
+                {
+                    return InvokeGetPrices(context);
+                }
+                else if (request.Path.StartsWithSegments("/v1/candles"))
+                {
+                    return InvokeGetCandles(context);
                 }
             }
-            else if (request.Path.StartsWithSegments("/v1/instruments"))
-            {
-                await InvokeInstruments(context);
-            }
-            else if (request.Path.StartsWithSegments("/v1/prices"))
-            {
-                await InvokePrices(context);
-            }
-            else if (request.Path.StartsWithSegments("/v1/candles"))
-            {
-                await InvokeCandles(context);
-            }
-            else
-            {
-                await _next.Invoke(context);
-            }
+            return _next.Invoke(context);
         }
 
-        private async Task InvokeAccounts(HttpContext context)
+        private async Task InvokeGetAccounts(HttpContext context)
         {
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             await context.Response.WriteAsync(JsonConvert.SerializeObject(new
@@ -73,7 +73,7 @@ namespace TradeApp.FakeOandaSrver
             }));
         }
 
-        private async Task InvokeAccount(HttpContext context, int accountId)
+        private async Task InvokeGetAccount(HttpContext context, int accountId)
         {
             var account = _context.Accounts.Find(accountId);
 
@@ -94,7 +94,7 @@ namespace TradeApp.FakeOandaSrver
             }));
         }
 
-        private async Task InvokeOrders(HttpContext context, int accountId)
+        private async Task InvokeGetOrders(HttpContext context, int accountId)
         {
             var maxId = ParseQuery<int?>(context.Request.Query["maxId"]);
             var count = ParseQuery<int?>(context.Request.Query["count"]) ?? 50;
@@ -139,7 +139,7 @@ namespace TradeApp.FakeOandaSrver
             }));
         }
 
-        private async Task InvokeInstruments(HttpContext context)
+        private async Task InvokeGetInstruments(HttpContext context)
         {
             var fields = context.Request.Query.TryGetValue("fields", out var fieldsList) ? fieldsList[0].Split(",") : Array.Empty<String>();
             var instruments = context.Request.Query.TryGetValue("instruments", out var instrumentsList) ? instrumentsList[0].Split(",") : Array.Empty<String>();
@@ -153,7 +153,7 @@ namespace TradeApp.FakeOandaSrver
 
             await context.Response.WriteAsync(JsonConvert.SerializeObject(new
             {
-                Instruments = fakeInstruments
+                instruments = fakeInstruments
                     .Select(inst =>
                     {
                         var dict = new Dictionary<string, object>();
@@ -176,7 +176,7 @@ namespace TradeApp.FakeOandaSrver
             }));
         }
 
-        private async Task InvokePrices(HttpContext context)
+        private async Task InvokeGetPrices(HttpContext context)
         {
             var instruments = context.Request.Query["instruments"][0].Split(",");
             context.Response.StatusCode = (int)HttpStatusCode.OK;
@@ -194,7 +194,7 @@ namespace TradeApp.FakeOandaSrver
             }));
         }
 
-        private async Task InvokeCandles(HttpContext context)
+        private async Task InvokeGetCandles(HttpContext context)
         {
             var instrument = (string)context.Request.Query["instrument"];
             var candleFormat = ((string)context.Request.Query["candleFormat"]) ?? "bidask";
