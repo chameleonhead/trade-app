@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
@@ -93,6 +94,7 @@ namespace TradeApp.Oanda
 
         HttpClient client;
         int? accountId;
+        private JsonConverter[] converters;
 
         public OandaApi(Uri baseUri, string accessToken) : this(CreateClient(baseUri, accessToken), null)
         {
@@ -106,6 +108,10 @@ namespace TradeApp.Oanda
         {
             this.client = client;
             this.accountId = accountId;
+            this.converters = new JsonConverter[] 
+            {
+                new OrderSideJsonConverter(),
+            };
         }
 
         private static HttpClient CreateClient(Uri baseUri, string accessToken)
@@ -246,6 +252,101 @@ namespace TradeApp.Oanda
             return (await GetResponse<OrdersResponse>($"/v1/accounts/{accountId}/orders?{query.ToString()}")).Orders;
         }
 
+        public async Task<CreatedOrder> PostOrder(
+           string instrument,
+           int units,
+           OrderSide side,
+           OrderType type,
+           DateTime expiry,
+           decimal price,
+           decimal? lowerBound = null,
+           decimal? upperBound = null,
+           decimal? stopLoss = null,
+           decimal? takeProfit = null,
+           decimal? trailingStop = null)
+        {
+            if (type == OrderType.Market)
+                throw new ArgumentException($"order type must not be market. try using another method: PostMarketOrder");
+            var accountId = RequireAccountId();
+            var param = new Dictionary<string, string>();
+            param.Add("instrument", instrument);
+            param.Add("units", units.ToString());
+            param.Add("side", side.ToString());
+            param.Add("type", OrderTypeToRequestRepresentation(OrderType.Market));
+            param.Add("expiry", XmlConvert.ToString(expiry, XmlDateTimeSerializationMode.Utc));
+            param.Add("price", price.ToString());
+            if (lowerBound != null)
+                param.Add("lowerBound", lowerBound.ToString());
+            if (upperBound != null)
+                param.Add("upperBound", upperBound.ToString());
+            if (stopLoss != null)
+                param.Add("stopLoss", stopLoss.ToString());
+            if (takeProfit != null)
+                param.Add("takeProfit", takeProfit.ToString());
+            if (trailingStop != null)
+                param.Add("trailingStop", trailingStop.ToString());
+            return (await PostResponse<CreatedOrder>($"/v1/accounts/{accountId}/orders", param));
+        }
+
+        public async Task<CreatedMarketOrder> PostMarketOrder(
+           string instrument,
+           int units,
+           OrderSide side,
+           decimal? lowerBound = null,
+           decimal? upperBound = null,
+           decimal? stopLoss = null,
+           decimal? takeProfit = null,
+           decimal? trailingStop = null)
+        {
+            var accountId = RequireAccountId();
+            var param = new Dictionary<string, string>();
+            param.Add("instrument", instrument);
+            param.Add("units", units.ToString());
+            param.Add("side", OrderSideToRequestRepresentation(side));
+            param.Add("type", OrderTypeToRequestRepresentation(OrderType.Market));
+            if (lowerBound != null)
+                param.Add("lowerBound", lowerBound.ToString());
+            if (upperBound != null)
+                param.Add("upperBound", upperBound.ToString());
+            if (stopLoss != null)
+                param.Add("stopLoss", stopLoss.ToString());
+            if (takeProfit != null)
+                param.Add("takeProfit", takeProfit.ToString());
+            if (trailingStop != null)
+                param.Add("trailingStop", trailingStop.ToString());
+            return (await PostResponse<CreatedMarketOrder>($"/v1/accounts/{accountId}/orders", param));
+        }
+
+        private static string OrderSideToRequestRepresentation(OrderSide side)
+        {
+            switch (side)
+            {
+                case OrderSide.Buy:
+                    return "buy";
+                case OrderSide.Sell:
+                    return "sell";
+                default:
+                    throw new ArgumentException($"unknown order side: {side}");
+            }
+        }
+
+        private static string OrderTypeToRequestRepresentation(OrderType type)
+        {
+            switch(type)
+            {
+                case OrderType.Limit:
+                    return "limit";
+                case OrderType.Stop:
+                    return "stop";
+                case OrderType.MarketIfTouched:
+                    return "marketIfTouched";
+                case OrderType.Market:
+                    return "market";
+                default:
+                    throw new ArgumentException($"unknown order type: {type}");
+            }
+        }
+
         private int RequireAccountId()
         {
             return accountId ?? throw new InvalidOperationException("Must specify accountId with this operation");
@@ -268,9 +369,27 @@ namespace TradeApp.Oanda
             return await ConvertFromResponse<T>(response);
         }
 
+        private async Task<T> PostResponse<T>(string requestUri, IEnumerable<KeyValuePair<string, string>> namedValueCollection)
+        {
+            Debug.WriteLine(requestUri);
+            HttpContent content = new FormUrlEncodedContent(namedValueCollection);
+            var response = await client.PostAsync(requestUri, content).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                Trace.TraceError(response.Content.ReadAsStringAsync().Result);
+                var errorInfo = await ConvertFromResponse<ErrorInfo>(response);
+                if (errorInfo != null)
+                {
+                    throw OandaApiException.FromErrorInfo(errorInfo);
+                }
+                response.EnsureSuccessStatusCode();
+            }
+            return await ConvertFromResponse<T>(response);
+        }
+
         private async Task<T> ConvertFromResponse<T>(HttpResponseMessage response)
         {
-            return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
+            return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync(), this.converters);
         }
     }
 }

@@ -301,4 +301,98 @@ namespace TradeApp.Oanda
         public decimal? TrailingStop { get; set; }
     }
 
+    /// <summary>
+    /// 新しい注文を作成する(成り行き注文以外)
+    /// POST /v1/accounts/:account_id/orders
+    /// </summary>
+    public class CreatedOrder
+    {
+        public string Instrument { get; set; }
+        public DateTime Time { get; set; }
+        public decimal Price { get; set; }
+        public OpeningOrder OrderOpened { get; set; }
+    }
+
+    public class OpeningOrder
+    {
+        public int Id { get; set; }
+        public int Units { get; set; }
+        public OrderSide Side { get; set; }
+        public decimal TakeProfit { get; set; }
+        public decimal StopLoss { get; set; }
+        public DateTime Expiry { get; set; }
+        public decimal UpperBound { get; set; }
+        public decimal LowerBound { get; set; }
+        public decimal TrailingStop { get; set; }
+    }
+
+    /// <summary>
+    /// 新しい注文を作成する(成り行き注文)
+    /// POST /v1/accounts/:account_id/orders
+    /// </summary>
+    public class CreatedMarketOrder
+    {
+        public string Instrument { get; set; }
+
+        /// <summary>
+        /// 注文が作成された時間
+        /// </summary>
+        public DateTime Time { get; set; }
+
+        /// <summary>
+        /// 注文のトリガー価格
+        /// </summary>
+        public decimal Price { get; set; }
+
+        public OpeningTrade TradeOpened { get; set; }
+        public ClosedTrade[] TradeClosed { get; set; }
+        public TradeReduced TradeReduced { get; set; }
+    }
+
+    public class OpeningTrade
+    {
+        /// <summary>
+        /// 注文ID
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// 注文単位
+        /// </summary>
+        public int Units { get; set; }
+
+        /// <summary>
+        /// 売買区別
+        /// </summary>
+        public OrderSide Side { get; set; }
+
+        /// <summary>
+        /// テイクプロフィット価格(注文時に設定した場合)
+        /// </summary>
+        public decimal?  TakeProfit { get; set; }
+
+        /// <summary>
+        /// ストップロス価格(注文時に設定した場合)
+        /// </summary>
+        public decimal StopLoss { get; set; }
+
+        /// <summary>
+        /// トレーリングストップディスタンス(注文時に設定した場合)
+        /// </summary>
+        public decimal TrailingStop { get; set; }
+    }
+
+    public class ClosedTrade
+    {
+        public int Id { get; set; }
+        public int Units { get; set; }
+    }
+
+    public class TradeReduced
+    {
+        public int Id { get; set; }
+        public int Units { get; set; }
+        public decimal Pl { get; set; }
+        public decimal Interest { get; set; }
+    }
 }

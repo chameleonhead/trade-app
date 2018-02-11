@@ -61,6 +61,22 @@ namespace TradeApp.FakeOandaSrver
                     return InvokeGetCandles(context);
                 }
             }
+
+            if (request.Method == "POST")
+            {
+                if (request.Path.StartsWithSegments("/v1/accounts", out var remaining))
+                {
+                    var match = Regex.Match(remaining, @"^/?(\d+)");
+                    if (match.Success)
+                    {
+                        var accountId = int.Parse(match.Groups[1].Value);
+                        if (remaining.StartsWithSegments($"/{accountId}/orders"))
+                        {
+                            return InvokePostOrders(context, accountId);
+                        }
+                    }
+                }
+            }
             return _next.Invoke(context);
         }
 
@@ -137,6 +153,59 @@ namespace TradeApp.FakeOandaSrver
                         trailingStop = order.TrailingStop,
                     }).ToArray()
             }));
+        }
+
+        private async Task InvokePostOrders(HttpContext context, int accountId)
+        {
+            var instrument = ParseQuery<string>(context.Request.Form["instrument"]);
+            var units = ParseQuery<int>(context.Request.Form["units"]);
+            var side = ParseQuery<FakeOandaContext.FakeOandaSide>(context.Request.Form["side"]);
+            var type = ParseQuery<FakeOandaContext.FakeOandaOrderType>(context.Request.Form["type"]);
+            var expiry = ParseQuery<DateTime>(context.Request.Form["expiry"]);
+            var price = ParseQuery<decimal?>(context.Request.Form["price"]);
+            var lowerBound = ParseQuery<decimal?>(context.Request.Form["lowerBound"]);
+            var upperBound = ParseQuery<decimal?>(context.Request.Form["upperBound"]);
+            var stopLoss = ParseQuery<decimal?>(context.Request.Form["stopLoss"]);
+            var takeProfit = ParseQuery<decimal?>(context.Request.Form["takeProfit"]);
+            var trailingStop = ParseQuery<decimal?>(context.Request.Form["trailingStop"]);
+
+            if (type == FakeOandaContext.FakeOandaOrderType.market)
+            {
+                var p = _context.Prices[instrument];
+                var trade = _context.CreateTrade(
+                    accountId,
+                    instrument,
+                    units,
+                    side,
+                    side == FakeOandaContext.FakeOandaSide.buy ? p.Ask : p.Bid,
+                    stopLoss,
+                    takeProfit,
+                    trailingStop);
+
+                var dict = new Dictionary<string, object>();
+
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(dict));
+            }
+            else
+            {
+                var order = _context.CreateOrder(
+                    accountId, 
+                    instrument, 
+                    units, 
+                    type, 
+                    side, 
+                    expiry, 
+                    price.Value, 
+                    lowerBound, 
+                    upperBound, 
+                    stopLoss, 
+                    takeProfit, 
+                    trailingStop);
+
+                var dict = new Dictionary<string, object>();
+
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(dict));
+            }
         }
 
         private async Task InvokeGetInstruments(HttpContext context)
@@ -334,9 +403,17 @@ namespace TradeApp.FakeOandaSrver
                 {
                     return (T)(object)s;
                 }
+                if (type.IsEnum)
+                {
+                    return (T)(object)Enum.Parse(type, s);
+                }
                 if (type == typeof(int?))
                 {
                     return (T)(object)int.Parse(s);
+                }
+                if (type == typeof(decimal?))
+                {
+                    return (T)(object)decimal.Parse(s);
                 }
                 if (type == typeof(bool?))
                 {

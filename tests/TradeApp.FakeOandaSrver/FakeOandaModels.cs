@@ -38,6 +38,7 @@ namespace TradeApp.FakeOandaSrver
             public int OpenOrders { get { return 0; } }
 
             public Dictionary<int, FakeOandaOrder> Orders { get; } = new Dictionary<int, FakeOandaOrder>();
+            public Dictionary<int, FakeOandaTrade> Trades { get; } = new Dictionary<int, FakeOandaTrade>();
         }
 
         public class FakeOandaInstrument
@@ -157,6 +158,41 @@ namespace TradeApp.FakeOandaSrver
             public decimal? TrailingStop { get; private set; }
         }
 
+        public class FakeOandaTrade
+        {
+            public FakeOandaTrade(
+                int id,
+                string instrument,
+                int units,
+                FakeOandaSide side,
+                DateTime time,
+                decimal price,
+                decimal? takeProfit,
+                decimal? stopLoss,
+                decimal? trailingStop)
+            {
+                Id = id;
+                Instrument = instrument;
+                Units = units;
+                Side = side;
+                Time = time;
+                Price = price;
+                TakeProfit = takeProfit;
+                StopLoss = stopLoss;
+                TrailingStop = trailingStop;
+            }
+
+            public int Id { get; private set; }
+            public string Instrument { get; private set; }
+            public int Units { get; private set; }
+            public FakeOandaSide Side { get; private set; }
+            public DateTime Time { get; private set; }
+            public decimal Price { get; private set; }
+            public decimal? TakeProfit { get; private set; }
+            public decimal? StopLoss { get; private set; }
+            public decimal? TrailingStop { get; private set; }
+        }
+
         public FakeOandaContext()
         {
             Initialize();
@@ -169,6 +205,7 @@ namespace TradeApp.FakeOandaSrver
         public Dictionary<string, FakeOandaInstrument> Instruments = new Dictionary<string, FakeOandaInstrument>();
         public Dictionary<string, FakeOandaPrice> Prices = new Dictionary<string, FakeOandaPrice>();
         private int _orderId;
+        private int _tradeId;
 
         public void Initialize()
         {
@@ -331,6 +368,30 @@ namespace TradeApp.FakeOandaSrver
                 trailingStop);
             Accounts[accountId].Orders.Add(order.Id, order);
             return order;
+        }
+
+        public FakeOandaTrade CreateTrade(
+            int accountId,
+            string instrument,
+            int units,
+            FakeOandaSide side,
+            decimal price,
+            decimal? stopLoss = null,
+            decimal? takeProfit = null,
+            decimal? trailingStop = null)
+        {
+            var trade = new FakeOandaTrade(
+                _tradeId++,
+                instrument,
+                units,
+                side,
+                CurrentTime,
+                price,
+                takeProfit,
+                stopLoss,
+                trailingStop);
+            Accounts[accountId].Trades.Add(trade.Id, trade);
+            return trade;
         }
     }
 
